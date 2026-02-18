@@ -1,0 +1,1 @@
+# run the Figure_4/panel_a_b/ttp_and_ratio_phase_space.py script with the folder name directing to the sweep data containing the variations you want to compare.

@@ -1,0 +1,43 @@
+total_time: 3683
+save_results: results/opt_test
+save_in_core: false
+return_all: false
+mutations_active: true
+sim_pixel_to_exp_pixel_factor: 1376/100
+start_point: 351
+delta_t: 1.0
+nutrient_diffusion_steps: 1
+diffusion_nutrients: 0.01466006
+diffusion_sensitive: 0.34723089
+diffusion_resistant: 0.34723089
+density_threshold: 0.05
+uptake_rate: 2.93434691  # also called consumption rate
+mutation_rate: 0.87714844  # also called mutation prefactor
+mutation_scaling: 2184.07516852
+sensitive_growth_rate: 0.02448706478662077
+resistant_growth_rate: 0.02448706478662077
+image_size: 200
+gaussian: false
+gaussian_width: 2.2
+treatment_start: 360
+treatment_delay: 250
+release_delay: 240
+treatment_on_duration: 3683
+save_folder: results/sweadsagds
+treatment_on_min: 0
+treatment_on_max: 600
+treatment_on_step: 10
+treatment_off_min: 0
+treatment_off_max: 1000
+treatment_off_step: 10
+mutation_rate_min: 0.14619140766
+mutation_rate_max: 1.754296892
+mutation_rate_step: 0.14619140766
+num_replicas: 20
+updates_per_frame: 10
+save_animation: treatment_full_test1.mp4
+set_mut_pos: false
+mutation_pos_time: 611
+mutation_position:
+- 100
+- 92
