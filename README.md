@@ -85,6 +85,8 @@ In the folder `demo/demo_figures` are the scripts `figure_4_sweep_demo.py` and `
 
 The `kymo_demo.py` file will create a kymograph of the 6.5h/18h treatment schedule. Important: It is necessary to run the `demo.py` file before the create the needed data!
 
+The figure plots demo files need to be run from the root directory.
+
 ### Simulation Movie
 
 To create a video of the created simulation change the path in the main function of `source/visualization/animate_colonies.py` to
