@@ -91,9 +91,9 @@ The figure plots demo files need to be run from the root directory.
 
 To create a video of the created simulation change the path in the main function of `source/visualization/animate_colonies.py` to
 ```bash
-path = 'data/demo/met_6_5_18/met_6_5_18_0'
+path = 'demo/demo_data/met_6_5_18/met_6_5_18_0'
 ```
-and run the script. The created video will be saved in the videos folder. Important: It is necessary to run the `demo.py` file before the create the needed data! (Note: ffmpeg is required to create videos)
+and run the script from the root directory. The created video will be saved in the videos folder. Important: It is necessary to run the `demo.py` file before the create the needed data! (Note: ffmpeg is required to create videos)
 
 ## General Use
 
