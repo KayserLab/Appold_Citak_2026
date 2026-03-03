@@ -10,13 +10,14 @@ class DiffusionModel2D:
     def __init__(self):
         path = os.path.join(find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
         with open(path, 'r') as file:
-            self.params = yaml.safe_load(file) # ['simulation_params']
+            self.params = yaml.safe_load(file)
 
-        # self.treatment_times = np.zeros(self.params['total_time'], dtype=bool)
         self.treatment_times = None
-        self.treatment_efficacy = 0  # 1 for no delay, 0 for full delay
+        self.treatment_efficacy = 0 
         self.treatment_temp = 0
         self.save_treat_efficacy = [0]
+        self.save_size = [1*(eval(self.params['sim_pixel_to_exp_pixel_factor'])**2) * (8.648 ** 2) / 1e6]
+        self.save_ratio = [0]
         self.random_seed = 1
         self.rng = None
         self.mutation_count = 0
@@ -40,21 +41,6 @@ class DiffusionModel2D:
             return convolve(mat, self.kernel, mode='constant', cval=1.0)
 
     def update(self, timer, nutrients, sensitive, resistant):
-        # if self.treatment_times[timer]:
-        #     self.treatment_efficacy += self.params['delta_t']/self.params['treatment_delay']
-        #     if self.treatment_efficacy > 1:
-        #         self.treatment_efficacy = 1
-        #     if self.treatment_efficacy < 0:
-        #         self.treatment_efficacy = 0
-        # else:
-        #     self.treatment_efficacy -= self.params['delta_t']/self.params['release_delay']
-        #     if self.treatment_efficacy < 0:
-        #         self.treatment_efficacy = 0
-        #     if self.treatment_efficacy > 1:
-        #         self.treatment_efficacy = 1
-        #
-        # self.save_treat_efficacy.append(self.treatment_efficacy)
-
         delta_t = self.params['delta_t']
         treatment_delay = self.params['treatment_delay']
         release_delay = self.params['release_delay']
@@ -63,22 +49,17 @@ class DiffusionModel2D:
 
         current_treatment = bool(self.treatment_times[timer])
 
-        # detect falling edge (treatment just stopped at this step)
         if self.prev_treatment and not current_treatment:
-            self.extra_steps_remaining = 30 # -(80/210) * self.params['treatment_on_duration'] + (250*80/210) # -(80/85) * self.params['treatment_on_duration'] + (125*80/85)
-
-            # lag length depends on how long the last ON episode was
+            self.extra_steps_remaining = 30
             self.lag_steps_remaining = lag_steps
 
         if current_treatment:
-            # Treatment ON overrides extra / lag
             self.extra_steps_remaining = 0
             self.lag_steps_remaining = 0
 
             self.treatment_efficacy += delta_t / treatment_delay
 
         elif self.extra_steps_remaining > 0:
-            # Residual treatment phase: still ramping like ON
             self.treatment_efficacy += delta_t / treatment_delay
             self.extra_steps_remaining -= 1
             self.lag_steps_remaining -= 1
@@ -87,10 +68,8 @@ class DiffusionModel2D:
             self.lag_steps_remaining -= 1
 
         else:
-            # True OFF / release phase: decay back to 0
             self.treatment_efficacy -= delta_t / release_delay
 
-        # clamp to [0,1]
         if self.treatment_efficacy > 1.0:
             self.treatment_efficacy = 1.0
         elif self.treatment_efficacy < 0.0:
@@ -152,7 +131,7 @@ class DiffusionModel2D:
 
     def run_simulation(self, save_without_asking=False, stop_at_fullstop=False, stop_with_size=False):
         self.set_random_seed()
-        n_array, s_array, r_array, dn_array, gs_array, gr_array = [], [], [], [], [], []
+        n_array, s_array, r_array, nut_save, sen_save, res_save = [], [], [], None, None, None
         nutrients, sensitive, resistant = self.get_initial_state()
 
         if self.params['save_in_core'] or self.params['return_all']:
@@ -160,8 +139,10 @@ class DiffusionModel2D:
             s_array.append(np.copy(sensitive))
             r_array.append(np.copy(resistant))
 
+        counter = 0
         for i in tqdm.tqdm(range(1, self.params['total_time'])):
             nutrients, sensitive, resistant = self.update(i, nutrients, sensitive, resistant)
+
             if self.params['set_mut_pos'] and not self.params['mutations_active']:
                 if i == self.params['mutation_pos_time']:
                     sensitive[self.params['mutation_position'][0], self.params['mutation_position'][1]] -= 1 / self.params['mutation_scaling']
@@ -182,13 +163,25 @@ class DiffusionModel2D:
             total_array = sen_thresholded + res_thresholded
             total_count = np.count_nonzero(total_array)
             size = (total_count * (eval(self.params['sim_pixel_to_exp_pixel_factor'])**2) * (8.648 ** 2)) / 1e6
+            self.save_size.append(size)
+
+            sen_thresholded_ratio = np.where(sensitive > (1 / self.params['mutation_scaling']), sensitive, 0)
+            res_thresholded_ratio = np.where(resistant > (1 / self.params['mutation_scaling']), resistant, 0)
+            res_ratio = np.where(res_thresholded_ratio > sen_thresholded_ratio, 1, 0)
+            self.save_ratio.append(np.count_nonzero(res_ratio) / total_count if total_count > 0 else 0)
+
             if total_count < 1:
                 print(f'Total count is: {total_count} at timestep: {i} with treat: {self.treatment_times}')
 
-            # if size >= 71 and stop_with_size:
-            #     break
+            if size >= 71 and stop_with_size and counter == 0:
+                nut_save = nutrients.copy()
+                sen_save = sensitive.copy()
+                res_save = resistant.copy()
+                counter += 1
+
             if stop_at_fullstop and self.treatment_efficacy >= 1.0:
                 break
+
             if self.params['save_in_core'] or self.params['return_all']:
                 n_array.append(np.copy(nutrients))
                 s_array.append(np.copy(sensitive))
@@ -227,14 +220,13 @@ class DiffusionModel2D:
             if self.params['return_all']:
                 return np.array(n_array, dtype=np.float32), np.array(s_array, dtype=np.float32), np.array(r_array, dtype=np.float32), np.array(self.treatment_times), np.array(self.save_treat_efficacy, dtype=np.float32)
             else:
-                return np.array(nutrients, dtype=np.float32), np.array(sensitive, dtype=np.float32), np.array(resistant, dtype=np.float32), np.array(self.treatment_times), np.array(self.save_treat_efficacy, dtype=np.float32)
+                return np.array(nut_save, dtype=np.float32), np.array(sen_save, dtype=np.float32), np.array(res_save, dtype=np.float32), np.array(self.treatment_times), np.array(self.save_treat_efficacy, dtype=np.float32), np.array(self.save_size, dtype=np.float32), np.array(self.save_ratio, dtype=np.float32)
 
 
 def find_project_root(current_dir, marker_file):
     current_dir = os.path.abspath(current_dir)
-    while current_dir != os.path.dirname(current_dir):  # Stop at the root of the file system
+    while current_dir != os.path.dirname(current_dir):
         if marker_file in os.listdir(current_dir):
             return current_dir
         current_dir = os.path.dirname(current_dir)
-    return None  # Return None if the root is not found
-
+    return None

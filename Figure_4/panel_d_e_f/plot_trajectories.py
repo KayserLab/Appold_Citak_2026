@@ -17,7 +17,7 @@ plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
 def calc_treatment_efficacy(treat_on, treat_off, params):
-    first_start = params['treatment_start'] # + params['start_point']
+    first_start = params['treatment_start']
 
     treatment_times = np.zeros(params['total_time'])
     treatment_length = treat_on
@@ -69,54 +69,15 @@ def load_sim_data(path):
         sen_mask = sen_thresholded > 0
         res_mask = res_thresholded > 0
 
-        # boundary pixels (boolean images)
-        tot_b = seg.find_boundaries(tot_mask, mode="inner")  # or "outer"
+        tot_b = seg.find_boundaries(tot_mask, mode="inner")
         sen_b = seg.find_boundaries(sen_mask, mode="inner")
         res_b = seg.find_boundaries(res_mask, mode="inner")
 
-        # intersection of contours
         front_sen = tot_b & sen_b
         front_res = tot_b & res_b
 
-        # average original values on that front
         sen_avg_front_den.append(sen_diff[i][front_sen].mean() if front_sen.any() else 0)
         res_avg_front_den.append(res_diff[i][front_res].mean() if front_res.any() else 0)
-
-        # tot_arr = np.where(total_array > 0, 1, 0)
-        # tot_arr_contour = measure.find_contours(tot_arr, 0.5)
-        # sen_arr_contour = measure.find_contours(sen_thresholded, 0.5)
-        # res_arr_contour = measure.find_contours(res_thresholded, 0.5)
-        #
-        # # remove contour points from tot_arr_contour that are not in sen_arr_contour
-        # tot_arr_contour_filtered_sen = []
-        # for contour in tot_arr_contour:
-        #     filtered_contour = []
-        #     for point in contour:
-        #         if any(np.all(point == sen_point) for sen_contour in sen_arr_contour for sen_point in sen_contour):
-        #             filtered_contour.append(point)
-        #     tot_arr_contour_filtered_sen.append(np.array(filtered_contour))
-        #
-        # # remove contour points from tot_arr_contour that are not in res_arr_contour
-        # tot_arr_contour_filtered_res = []
-        # for contour in tot_arr_contour:
-        #     filtered_contour = []
-        #     for point in contour:
-        #         if any(np.all(point == res_point) for res_contour in res_arr_contour for res_point in res_contour):
-        #             filtered_contour.append(point)
-        #     tot_arr_contour_filtered_res.append(np.array(filtered_contour))
-        #
-        # rows_sen = tot_arr_contour_filtered_sen[0][:, 0].astype(int)
-        # cols_sen = tot_arr_contour_filtered_sen[0][:, 1].astype(int)
-        # sen_front_values = sen[i][rows_sen, cols_sen]
-        # sen_avg_front_den.append(np.mean(sen_front_values))
-        #
-        # if len(tot_arr_contour_filtered_res[0]) > 0:
-        #     rows_res = tot_arr_contour_filtered_res[0][:, 0].astype(int)
-        #     cols_res = tot_arr_contour_filtered_res[0][:, 1].astype(int)
-        #     res_front_values = res[i][rows_res, cols_res]
-        #     res_avg_front_den.append(np.mean(res_front_values))
-        # else:
-        #     res_avg_front_den.append(0)
 
         if total_count >= 1:
             counts_res.append(np.count_nonzero(res_ratio)/total_count)
@@ -188,8 +149,6 @@ def plot_comparison(replicate, treatment, color):
     fig4, ax4 = plt.subplots(figsize=(8.4/3, 6.5/6), dpi=300)
 
     params = torch.load(f'../../data/sim_data/{treatment}/{treatment}_0/params.pth')
-    # params = torch.load(f'../../Figure_3/sim_data/{treatment}_0/params.pth')
-    # print(treatment.split('_')[1])
     treat_on = int(treatment.split('_')[1])
     if treatment == 'met_6_5_18':
         treat_on = 6.5
@@ -225,9 +184,6 @@ def plot_comparison(replicate, treatment, color):
 
     ax4.set_xlim(0, 150)
     ax4.set_ylim(0, 0.0015*params['mutation_scaling'])
-
-    # ax2.legend(loc='upper left', frameon=False)
-    # ax3.legend(loc='upper left', frameon=False)
 
     # ax1.set_ylabel(r'Area (mm²)')
     # ax2.set_ylabel(r'Resistant/Total')

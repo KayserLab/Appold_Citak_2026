@@ -118,15 +118,10 @@ def error_function(sim_breakout_probability, exp_breakout_probability):
 
 def fit_simulation(initial_guess):
     initial_guess = initial_guess
-    breakouts =           np.array([   4,    4,    5,    8,   10,   12,   13,   12,   10,   10]) # np.array([   4,    6,    5,    7,   10,   13,   13,   12,   11,   10])
+    breakouts =           np.array([   4,    4,    5,    8,   10,   12,   13,   12,   10,   10]) 
     replicates =          np.array([  10,   12,   10,   15,   11,   13,   13,   12,   10,   10])
     treatment_duration =  np.array([  40,   80,  120,  160,  200,  240,  280,  320,  360,  400])
     experiment_duration = np.array([1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360])
-
-    # breakouts =             [  13,   4,   9,   14,    6,   13,    2,   11,   1]
-    # replicates =            [  15,  16,  13,   14,    9,   15,    7,   12,  12]
-    # treatment_duration =    [ 200, 180, 170,  280,  230,  210,  200,  400,  40]
-    # experiment_duration =   [1000, 900, 930, 1200, 1060, 1040, 1030, 1240, 880] # treat_start + treat_duration + 400 + 80 (most of the time)
 
     log_dir = '../logs_fitting'
     if not os.path.exists(log_dir):

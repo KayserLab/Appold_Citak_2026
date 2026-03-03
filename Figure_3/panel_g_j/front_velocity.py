@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import matplotlib as mpl
 import skimage.segmentation as seg
 
 plt.rcParams.update({'font.size': 7,

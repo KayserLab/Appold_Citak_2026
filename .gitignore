@@ -1,0 +1,8 @@
+/.venv/
+/data/
+/appold_citak_2026.egg-info/
+/videos/
+
+__pycache__/
+hardcoded_params_instances.tsv
+/demo/demo_data/met_6_5_18/

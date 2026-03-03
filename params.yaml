@@ -23,7 +23,7 @@ treatment_start: 360
 treatment_delay: 250
 release_delay: 240
 treatment_on_duration: 3683
-save_folder: results/sweadsagds
+save_folder: data/sweeps/test
 treatment_on_min: 0
 treatment_on_max: 600
 treatment_on_step: 10

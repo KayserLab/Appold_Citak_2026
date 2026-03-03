@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from matplotlib.patches import Rectangle
-from matplotlib.patches import ConnectionPatch
 import matplotlib as mpl
 import os
 import yaml
@@ -23,7 +21,7 @@ plt.rcParams['ytick.labelsize'] = 6
 
 def find_project_root(current_dir, marker_file):
     current_dir = os.path.abspath(current_dir)
-    while current_dir != os.path.dirname(current_dir):  # Stop at the root of the file system
+    while current_dir != os.path.dirname(current_dir):
         if marker_file in os.listdir(current_dir):
             return current_dir
         current_dir = os.path.dirname(current_dir)
@@ -47,24 +45,12 @@ def build_sweep_indices(params):
     replicas = params['num_replicas']
     return treat_on, treat_off, mutation_rates, replicas
 
-def duty_cycle_func(x):
-    a = 1/(1+(800/260))
-    return -(a*x)/(a-1)
-
 def plot_existing_data(folder):
     mean_total, mean_resistant = np.load(f'../../data/sweep_arrays/{folder}_size_array.npy'), np.load(f'../../data/sweep_arrays/{folder}_ratio_array.npy')
     params = torch.load(f'../../data/sweeps/{folder}/params.pth', map_location='cpu', weights_only=False)
     treat_on, treat_off, mutation_rates, replicas = build_sweep_indices(params)
     treat_on_len, treat_off_len, mutation_rates_len = len(treat_on), len(treat_off), len(mutation_rates)
     # treat_on_len, treat_off_len, mutation_rates_len = len(treat_on[:41]), len(treat_off[:81]), len(mutation_rates)
-
-    # treat_effic_point_test, treat_starts_test, treat_ends_test = calc_treatment_efficacy(140, 360, params)
-    # plt.figure(figsize=(3,2), dpi = 300)
-    # x = np.linspace(0, len(treat_effic_point_test)/20, len(treat_effic_point_test))
-    # plt.plot(x, treat_effic_point_test)
-    # for i in range(len(treat_starts_test)):
-    #     plt.axvspan(treat_starts_test[i]/20, treat_ends_test[i]/20, color='#bfbfbf', alpha=1, lw=0, zorder=0)
-    # plt.show()
 
     cmap_dots = mpl.colormaps.get_cmap('tab20b')
     steps_x = 40 // params['treatment_off_step']
@@ -101,8 +87,6 @@ def plot_existing_data(folder):
         axs.plot(range(len(max_line))[24:81],max_line[24:81], color='black', linestyle=':', linewidth=1, zorder=0, label=r'$\tau*$')
         # im0 = axs.imshow(mean_total[mutation_rate], interpolation='none', cmap=cmap, origin='lower',
         #                  vmin=mean_total[mutation_rate].min(), vmax=mean_total[mutation_rate].max())
-        #axs.plot(range(len(max_line))[25:81], max_line[25:81], color='black', linestyle=':', linewidth=1, zorder=0)
-        # print(max_line[36])
         # axs.set_title(f'{mutation_rates[mutation_rate]}', fontsize=7)
         axs.set_xlabel(r'$\tau_{\mathrm{off}}$ (h)')
         axs.set_xticks(np.arange(0, treat_off_len, 2*steps_x))
@@ -137,7 +121,6 @@ def plot_existing_data(folder):
         axs.plot(range(len(max_line))[24:81],max_line[24:81], color='white', linestyle=':', linewidth=1, zorder=0)
         # fig, axs = plt.subplots(figsize=(2.37, 1.73))  # (7.5/3, 2.6*0.65)
         # im1 = axs.imshow(mean_resistant[mutation_rate], cmap=cmap, origin='lower', interpolation='none', vmin=0, vmax=1)
-        # axs.plot(range(len(max_line))[1:81], max_line[1:81], color='white', linestyle=':', linewidth=1, zorder=0)
         axs.set_xticks(np.arange(0, treat_off_len, 2*steps_x))
         axs.set_xticklabels(x_ticks[::2*steps_x])
         axs.set_yticks(np.arange(0, treat_on_len, 2*steps_y))

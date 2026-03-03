@@ -1,12 +1,11 @@
 import numpy as np
-import torch
 import os
 import yaml
 
 
 def find_project_root(current_dir, marker_file):
     current_dir = os.path.abspath(current_dir)
-    while current_dir != os.path.dirname(current_dir):  # Stop at the root of the file system
+    while current_dir != os.path.dirname(current_dir):
         if marker_file in os.listdir(current_dir):
             return current_dir
         current_dir = os.path.dirname(current_dir)
@@ -15,7 +14,7 @@ def find_project_root(current_dir, marker_file):
 def get_params():
     path = os.path.join(find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
     with open(path, 'r') as file:
-        params = yaml.safe_load(file) #['simulation_params']
+        params = yaml.safe_load(file)
     return params
 
 def check_edge(img, x, y,):

@@ -1,6 +1,3 @@
-import numpy as np
-import matplotlib.pyplot as plt
-
 def f(x):
     x = x * 13.76 * 8.648
     y = (x + 8.80313863285115*15.828348487292509) / 15.828348487292509  # taken from Fig. 2 in the paper

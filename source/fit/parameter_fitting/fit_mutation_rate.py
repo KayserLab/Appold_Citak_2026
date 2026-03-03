@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import ast
-from matplotlib.path import Path  # For polygon containment checking
+from matplotlib.path import Path
 from source import core as cr
 import os
 import scipy.optimize as opt
@@ -20,12 +20,12 @@ class FitMutationRate:
     def get_params(self):
         path = os.path.join(self.find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
         with open(path, 'r') as file:
-            params = yaml.safe_load(file) # ['simulation_params']
+            params = yaml.safe_load(file)
         return params
 
     def find_project_root(self, current_dir, marker_file):
         current_dir = os.path.abspath(current_dir)
-        while current_dir != os.path.dirname(current_dir):  # Stop at the root of the file system
+        while current_dir != os.path.dirname(current_dir):
             if marker_file in os.listdir(current_dir):
                 return current_dir
             current_dir = os.path.dirname(current_dir)
@@ -60,7 +60,6 @@ class FitMutationRate:
             num_clones.append(len(filtered_first_frames))
         return np.mean(num_clones, dtype=np.float64), np.std(num_clones, dtype=np.float64, ddof=1)/ np.sqrt(len(num_clones))
 
-    # run simulation and get the number of particles
     def get_mutation_number_simulation(self, mutation_rate, replicas=15):
         num_clones = []
         for i in range(replicas):
@@ -123,6 +122,6 @@ def setup_logger(log_file):
     return logger
 
 if __name__ == '__main__':
-    initial_guess = 0.75 # 0.2246875  # Initial guess for mutation rate
+    initial_guess = 0.75  # Initial guess for mutation rate
     fit_mutation = FitMutationRate()
     fit_mutation.fit_mutation_rate(initial_guess)

@@ -11,14 +11,13 @@ from pathlib import Path
 
 
 def get_exp_data(path):
-    # Load the experimental data from the CSV file
     pulse_csv = pd.read_csv(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), f'source/fit/fit_data/no_treatment_csv/{path}'))
     area = pulse_csv['colony_area'][:150]
     return area
 
 def get_nutrient_data(start_point):
     position_of_mutant_in_sim_pixel = [3, 7, 11, 15]
-    frame_of_growth = [62.7138815475517,  122.85735392335089, 183.00082629915008, 243.1442986749493]  # Calculate from experimental data (parameter_checking fit to regrowth curve)
+    frame_of_growth = [62.7138815475517,  122.85735392335089, 183.00082629915008, 243.1442986749493]  # Calculate from experimental data (use calculate_res_regrowth_vals.py)(parameter_checking fit to regrowth curve)
     sim_step_of_growth = (np.array(frame_of_growth)) * 10 + start_point
     return position_of_mutant_in_sim_pixel, sim_step_of_growth
 
@@ -33,7 +32,7 @@ def run_simulation(initial_guess):
     sim.params['mutations_active'] = False
     sim.set_random_seed()
 
-    n_array, s_array, r_array, dn_array, gs_array, gr_array = [], [], [], [], [], []
+    n_array, s_array, r_array = [], [], []
     nutrients, sensitive, resistant = sim.get_initial_state()
 
     n_array.append(np.copy(nutrients))
@@ -51,7 +50,7 @@ def run_simulation(initial_guess):
 def update_params(start_point):
     path = os.path.join(find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
     with open(path, 'r') as file:
-        params = yaml.safe_load(file) # ['simulation_params']
+        params = yaml.safe_load(file)
 
     params['start_point'] = start_point
     path = Path(path)
@@ -62,7 +61,7 @@ def update_params(start_point):
 
 def find_project_root(current_dir, marker_file):
     current_dir = os.path.abspath(current_dir)
-    while current_dir != os.path.dirname(current_dir):  # Stop at the root of the file system
+    while current_dir != os.path.dirname(current_dir):
         if marker_file in os.listdir(current_dir):
             return current_dir
         current_dir = os.path.dirname(current_dir)

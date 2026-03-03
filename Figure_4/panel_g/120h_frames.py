@@ -1,9 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from matplotlib.colors import LinearSegmentedColormap, Normalize
-from matplotlib.cm import ScalarMappable
-import source.run_core as rc
+from matplotlib.colors import LinearSegmentedColormap
 import matplotlib as mpl
 
 
@@ -53,8 +51,6 @@ def plot_frame(save_name, frame, treatment):
 
     sen_norm = normalize_array(sen, 5)
     res_norm = normalize_array(res, 2.5)
-    gamma_sen = 5
-    gamma_res = 2.5
 
     goldenrod = '#DAA520'
     royalblue = '#4169E1'
@@ -92,36 +88,6 @@ def plot_frame(save_name, frame, treatment):
     ax.axis('off')
     plt.savefig(fr'{save_name}_{frame}_nutrients.pdf', dpi=300, transparent=True, bbox_inches='tight')
     plt.close()
-
-    # Colorbars
-    # nut = nutrients[frame]
-    # norm_res = Normalize(vmin=res.min(), vmax=res.max())
-    # norm_sen = Normalize(vmin=sen.min(), vmax=sen.max())
-    # norm_nut = Normalize(vmin=nut.min(), vmax=nut.max())
-    #
-    # cmap_res = LinearSegmentedColormap.from_list('resist', [(0, 0, 0), (218/255, 165/255, 32/255)])
-    # cmap_sen = LinearSegmentedColormap.from_list('sens', [(0, 0, 0), (65/255, 105/255, 225/255)])
-    # cmap_nut = plt.get_cmap(cmap)
-    #
-    # sm_res = ScalarMappable(norm=norm_res, cmap=cmap_res)
-    # sm_sen = ScalarMappable(norm=norm_sen, cmap=cmap_sen)
-    # sm_nut = ScalarMappable(norm=norm_nut, cmap=cmap_nut)
-    #
-    # for sm, label, fname in [(sm_res, fr'Resistant Density ($\gamma$ = {gamma_res})', f'{save_name}_cbar_resistant.pdf'),
-    #                          (sm_sen, fr'Sensitive Density ($\gamma$ = {gamma_sen})', f'{save_name}_cbar_sensitive.pdf'),
-    #                          (sm_nut, 'Nutrient Concentration', f'{save_name}_cbar_nutrients.pdf')]:
-    #
-    #     fig = plt.figure(figsize=(2, 0.15), dpi=300)
-    #     cax = fig.add_axes([0.05, 0.25, 0.9, 0.5])
-    #     cb = plt.colorbar(sm, cax=cax, orientation='horizontal')
-    #     cb.set_label(label, rotation=0, ha='center', va='bottom', labelpad=-15, fontsize=7)
-    #     cb.set_ticks([0, 0.2, 0.4, 0.6, 0.8, 1])
-    #     cax.tick_params(bottom=True, top=False, labelbottom=True, labeltop=False, labelsize=6, width=0.6, length=3, direction='inout', pad=1)
-    #     cax.spines['top'].set_visible(False)
-    #     cax.spines['right'].set_visible(False)
-    #     cax.spines['left'].set_visible(False)
-    #     fig.savefig(fname, bbox_inches='tight', transparent=True)
-    #     plt.close(fig)
 
 
 def main():

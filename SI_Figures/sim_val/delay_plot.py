@@ -116,11 +116,8 @@ def grid_fit_4seg(x, y, m3, linear_fit_end=None, min_len=(2, 3, 3, 2)):
     min0, min1, min2, min3len = min_len
     best = {"sse": np.inf}
 
-    # candidate indices for a,b,c
     for ia in range(min0, len(xs) - (min1 + min2 + min3len)):
         a = xs[ia]
-
-        # baseline y0 from x<a (mean is robust enough; could use median)
         y0 = float(np.mean(y[x < a]))
 
         for ib in range(ia + min1, len(xs) - (min2 + min3len)):
@@ -128,35 +125,28 @@ def grid_fit_4seg(x, y, m3, linear_fit_end=None, min_len=(2, 3, 3, 2)):
 
             for ic in range(ib + min2, len(xs) - min3len + 1):
                 c = xs[ic] if ic < len(xs) else xs[-1] + 1  # safety
-
-                # choose data range to fit the linear segment
                 lin_mask = (x >= a) & (x < b)
+
                 if linear_fit_end is not None:
                     lin_mask = (x >= a) & (x < min(b, linear_fit_end))
 
-                # must have enough points to fit
                 if np.sum(lin_mask) < 2:
                     continue
 
                 m1, q1 = fit_linear_ls(x[lin_mask], y[lin_mask])
-
                 yhat = predict_4seg(x, a, b, c, y0, m1, q1, m3)
                 sse = float(np.sum((y - yhat) ** 2))
 
                 if sse < best["sse"]:
-                    best = {
-                        "a": float(a), "b": float(b), "c": float(c),
-                        "y0": y0, "m1": float(m1), "q1": float(q1),
-                        "sse": sse
-                    }
+                    best = {"a": float(a), "b": float(b), "c": float(c), "y0": y0, "m1": float(m1), "q1": float(q1), "sse": sse}
     return best
 
 xdata = np.arange(36, np.argmax(under_derivative[60:110])+60, dtype=float)
 ydata = under_derivative[36:np.argmax(under_derivative[60:110])+60].astype(float)
 
-m3 = popt2[0]  # known slope of the final segment
+m3 = popt2[0]
 
-best = grid_fit_4seg(xdata, ydata, m3=m3, linear_fit_end=55)    # try 0.0 first; if you want fewer jumps try e.g. 10 or 100
+best = grid_fit_4seg(xdata, ydata, m3=m3, linear_fit_end=55)
 
 print(f'Overshoot: {(best["b"] - treatment_times[0] - 14)*10}')
 print(f'Lag Phase: {(best["c"] - treatment_times[0] - 14)*10}')

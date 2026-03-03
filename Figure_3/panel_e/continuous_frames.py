@@ -30,7 +30,7 @@ def load_data():
     sensitive = np.where((sensitive - 1/params['mutation_scaling']) > 0, sensitive, 0) / np.max(sensitive)
     resistant = np.where((resistant - 1/params['mutation_scaling']) > 0, resistant, 0) / np.max(resistant)
     nutrients = nutrients / np.max(nutrients)
-    return nutrients, sensitive, resistant, treatment_schedule, treatment_efficacy, params #, total_abundance
+    return nutrients, sensitive, resistant, treatment_schedule, treatment_efficacy, params
 
 
 def plot_frame(save_name, frame):

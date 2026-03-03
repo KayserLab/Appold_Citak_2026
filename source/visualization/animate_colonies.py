@@ -16,14 +16,8 @@ def load_data(path):
     treatment_schedule = np.load(f'{path}/treatment_times.npy')
     treatment_efficacy = np.load(f'{path}/treatment_efficacy.npy')
     params = torch.load(f'{path}/params.pth', weights_only=False)
-    # for i in range(len(sensitive)):
-    #     max_res = np.max(resistant[i]) if np.max(resistant[i]) > 0 else 1
-    #     sensitive[i] = np.where((sensitive[i] - 1/params['mutation_scaling']) > 0, sensitive[i], 0) / np.max(sensitive[i])
-    #     resistant[i] = np.where((resistant[i] - 1/params['mutation_scaling']) > 0, resistant[i], 0) / max_res
     sensitive = np.where((sensitive - 1 / params['mutation_scaling']) > 0, sensitive, 0) / np.max(sensitive)
     resistant = np.where((resistant - 1 / params['mutation_scaling']) > 0, resistant, 0) / np.max(resistant)
-    # sensitive = np.where(sensitive > 1, 1, sensitive)
-    # resistant = np.where(resistant > 1, 1, resistant)
     nutrients = nutrients / np.max(nutrients)
     return nutrients[351::2], sensitive[351::2], resistant[351::2], treatment_schedule[351::2], treatment_efficacy[351::2]
 
@@ -107,9 +101,6 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         return img,
 
     def update_nuts(frame):
-        # temp_img = np.array([sensitive[frame], resistant[frame], np.zeros_like(sensitive[frame])]).transpose(1,2,0)
-
-        # update time text
         time_text.set_text(f'Time: {frame/10:.1f} h')
         time_text_nut.set_text(f'Time: {frame/10:.1f} h')
 
@@ -135,40 +126,14 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         alpha = np.where(resistant[frame] > 1 / 2184.07516852, 1, alpha)
         temp_img = np.dstack([rgb_add, alpha])
 
-        # temp_img[:, :2, :] = 1
-        # temp_img[:, -2:, :] = 1
-        # temp_img[:2, :, :] = 1
-        # temp_img[-2:, :, :] = 1
-        #
-        # temp_img[:, :2, :3] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # temp_img[:, -2:, :3] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # temp_img[:2, :, :3] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # temp_img[-2:, :, :3] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-
         img.set_array(temp_img)
 
         nut_temp = nutrients[frame]
-        # nut_temp[:, :2] = 1
-        # nut_temp[:, -2:] = 1
-        # nut_temp[:2, :] = 1
-        # nut_temp[-2:, :] = 1
-        #
-        # nut_temp[:, :2] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # nut_temp[:, -2:] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # nut_temp[:2, :] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-        # nut_temp[-2:, :] = (256 - 65 * treatment_efficacy[frame - 1]) / 256
-
         nuts.set_data(nut_temp)
 
         a = np.clip(treatment_schedule[frame - 1], 0, 1)
         boundary_img0.set_data(overlay_rgba_from_mask(boundary_mask, "#bfbfbf", alpha=a))
         boundary_img1.set_data(overlay_rgba_from_mask(boundary_mask, "#bfbfbf", alpha=a))
-
-        # nuts.set_ydata(nutrients[frame][100,:])
-        # sen.set_ydata(sensitive[frame][100,:])
-        # res.set_ydata(resistant[frame][100,:])
-        # nut_dot = [i for i in range(len(nutrients[0][100, :])) if nutrients[0][100, i] <= 0.05][0]
-        # tt.set_offsets(np.c_[nut_dot, nutrients[frame][100, nut_dot]])
 
         return img, nuts, boundary_img0, boundary_img1
 
@@ -209,17 +174,10 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         boundary_img0 = ax[0].imshow(boundary_rgba0, interpolation='none')
         boundary_img1 = ax[1].imshow(boundary_rgba0, interpolation='none')
 
-        # sen = ax[1].plot(sensitive[0][100,:], color='blue', label='sensitive')[0]
-        # nut_dot = [i for i in range(len(nutrients[0][100,:])) if nutrients[0][100,i] <= 0.05][0]
-        # tt = ax[1].scatter(nut_dot, nutrients[0][100,nut_dot], color='blue', s=10)
-        # tt = ax[1].axhline(y=0.05, color='red', linestyle='--', label='treatment threshold')
-        # res = ax[1].plot(resistant[0][100,:], color='orange', label='resistant')[0]
         nuts.set_clim(vmin=0, vmax=1)
         ax[0].axis('off')
-        # ax[1].set_ylim(-0.05, 1.05)
         ax[1].axis('off')
 
-        # add time to the top left corner
         time_text = ax[0].text(4, 4, 'Time: 0.0 h', color='black', fontsize=12, verticalalignment='top')
         time_text_nut = ax[1].text(4, 4, 'Time: 0.0 h', color='black', fontsize=12, verticalalignment='top')
 
@@ -281,9 +239,9 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
 
 def main():
     nut_threshold = 1/(np.exp(2)+1)
-    path = 'data/sim_data/no_treatment/no_treatment_0'
+    path = 'data/demo/met_6_5_18/met_6_5_18_0'
     save_path = 'videos'
-    animate_simulation(path, 'no_treatment_video', 90, save_path, nut_threshold, plot_nutes=True)
+    animate_simulation(path, 'met_6_5_18_video', 90, save_path, nut_threshold, plot_nutes=True)
     # path = 'results/pulse_set_mut_pos'
     # save_path = 'results'
     # animate_simulation(path, 'pulse_set_mut_pos_video_new', 90, save_path, nut_threshold, plot_nutes=False)

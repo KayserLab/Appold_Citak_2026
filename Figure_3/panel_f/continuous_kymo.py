@@ -1,11 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-import yaml
 import torch
-from scipy.spatial.distance import cdist
 from matplotlib.colors import LinearSegmentedColormap
-from scipy.ndimage import gaussian_filter
 
 plt.rcParams.update({'font.size': 7,
                      'pdf.fonttype': 42,
@@ -55,29 +51,15 @@ def load_sim_data(path):
                 break
         else:
             nut_front.append(0)
-        # calculate average radius for each time point of the total_array
+        
     colony_front = []
     for i in range(len(sen)):
         if radii_sen[i] > radii_res[i]:
             colony_front.append(radii_sen[i])
         else:
             colony_front.append(radii_res[i])
-    # colony_front = radii_sen
+    
     return np.array(colony_front), nut[:,100,:], np.array(nut_front)
-
-
-def calc_nut_int(nut_ar, radius):
-    nut_int = []
-    for i in range(radius.shape[0]):
-        nut_int.append(np.sum(nut_ar[i, 100 - radius[i]:100]))
-    return np.array(nut_int)
-
-def calc_effective_growth_layer(nut_ar, nut_int, radius):
-    eff_growth_layer = []
-    for i in range(radius.shape[0]):
-        layer_thickness = nut_int[i]/(nut_ar[i,100 - radius[i]])
-        eff_growth_layer.append(layer_thickness)
-    return np.array(eff_growth_layer)
 
 def rolling_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
@@ -134,10 +116,7 @@ def generate_kymograph_from_sim_data(path):
 
 path = '../../data/sim_data/continuous_dose/continuous_dose_0'
 rad_sen, nut, nut_front = load_sim_data(path)
-# nut_int = calc_nut_int(nut, rad_sen)
 kymograph = generate_kymograph_from_sim_data(path)
-# d = np.linspace(0, len(nut_int)/20, len(nut_int))
-# growth_layer = calc_effective_growth_layer(nut, nut_int, rad_sen)
 
 nut_threshold_low = 1/(np.exp(2)+1)
 nut_threshold_high = 1/(np.exp(-2)+1)
@@ -162,24 +141,15 @@ d = np.linspace(0, len(growth_layer_low)/20, len(growth_layer_low))
 params = torch.load(f'{path}/params.pth')
 
 px_to_mm = 13.76 * 8.648 / 1e3
-dt_sim_min = 3           # 1 sim step = 3 minutes (your simulation)
-kymo_every = 20          # you keep every 20th frame in generate_kymograph_from_sim_data()
-dt_kymo_h = (dt_sim_min * kymo_every) / 60.0  # = 1 hour per kymograph column
+Ny = kymograph.shape[1]
 
-# x positions for each kymograph column (hours)
-Nx = kymograph.shape[0]
-Ny = kymograph.shape[1] # number of columns in kymograph (time samples)
-x_hours = np.arange(Nx) * dt_kymo_h
-
-plt.figure(figsize=(7.3/2, 7.1/3.5)) # (7.6/3, 7.1/4))
-print(x_hours[0], dt_kymo_h, x_hours[-1])
+plt.figure(figsize=(7.3/2, 7.1/3.5))
 plt.axvspan(18, 320, color='#bfbfbf', alpha=1, lw=0, zorder=0)
 plt.imshow(kymograph.transpose(1,0,2), origin='lower', aspect='auto',  extent=[0, len(rad_sen)/20, 0, Ny * px_to_mm])
 plt.ylim(0, 50*px_to_mm)
 plt.xlim(0, 150)
-# plt.plot(d, rolling_average((rad_sen - growth_layer)*px_to_mm, window_size=90), label='Effective growth layer', color='#e34234', linestyle='-.') # #e34234
-plt.plot(d, rolling_average(growth_layer_low * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{low}$', color='#e34234', linestyle=':')  # #e34234
-plt.plot(d, rolling_average(growth_layer_high * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{high}$', color='#e34234', linestyle='-.')  # #e34234
+plt.plot(d, rolling_average(growth_layer_low * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{low}$', color='#e34234', linestyle=':') 
+plt.plot(d, rolling_average(growth_layer_high * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{high}$', color='#e34234', linestyle='-.')
 plt.xlabel('Time (h)')
 plt.ylabel('Radial position (mm)')
 plt.legend(frameon=False, loc='upper left', ncol=2)

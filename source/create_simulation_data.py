@@ -30,6 +30,6 @@ def create_data(replicates, treatments):
 
 
 if __name__ == "__main__":
-    replicates = [20, 20, 20, 20, 20]
+    replicates = [20, 20, 20, 20, 20, 20]
     treatments = ['met_4_18', 'met_6_5_18', 'met_9_18', 'no_treatment', 'continuous_dose', 'pulse']
     create_data(replicates, treatments)
