@@ -110,19 +110,32 @@ Default output path pattern:
 
 Run `source/executable.py` with the wanted sweep parameters set in `params.yaml` to create the sweep data. Then run the `Figure_4/panel_a_c/create_sweep_arrays.py` to get the analysed sweeps arrays, which are used by other scripts.
 
-### 3. Generate figures
+### 3. Experimental analysis
+
+To run the scripts in `Experimental_analysis/`, download the required experimental data from figshare: https://doi.org/10.6084/m9.figshare.31356370, and place it into the corresponding folders expected by those scripts.
+
+Depending on which output data should be produced, script input/output paths may need to be adjusted.
+
+The `.czi` data needed for `Manuscript_czi_segmenter`, `Manuscript_concatenate_to_HDF5`, and 
+`Manuscript_segment_concatenated_HF55s` are too large for public deposition, but are available upon reasonable request.
+
+### 4. Generate figures
 
 Figure scripts are organized in `Figure_1` ... `Figure_5` and `SI_Figures`.
 
 After creating the simulation data in step 1 and putting the experimental data in the corresponding folder (see [Overview](#overview)) the panel scripts can be run to create the figure panels.
 
-### 4. Create animations
+Data from the same figshare repository (https://doi.org/10.6084/m9.figshare.31356370) is needed to create plots for Figure 1, Figure 2, and Figure 5, as well as for the SI figures `Adaptive therapy`, `No treatment control`, and `Switcher details`.
+
+These files need to be placed into the corresponding `Input_files` folders at the same path as the scripts. Some folders include subfolders; this structure needs to be preserved, or the paths must be adjusted directly in the scripts.
+
+### 5. Create animations
 
 Run `source/visualization/animate_colonies.py` with the path changed to the wanted simulation data to create animations of the run. The options `plot_nutes` allows you to choose if just the colony is animated or to additionally animate the nutrient layer. 
 
 This script requires `ffmpeg`.
 
-### 5. Run parameter fitting
+### 6. Run parameter fitting
 
 Important:
 - Fitting scripts expect specific experimental data folders in the fit folder: `source/fit/fit_data/no_treatemnt_csv/...`, `source/fit/fit_data/mutation_rate/...` (this should be continuous dose data).
