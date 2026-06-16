@@ -15,7 +15,7 @@ plt.rcParams.update({'font.size': 7,
                      'mathtext.bf': 'Arial:bold'})
 
 def load_data(treatment):
-    path = f'../../data/sim_data/{treatment}/{treatment}_0'
+    path = f'data/sim_data/{treatment}/{treatment}_0'
     sensitive = np.load(f'{path}/sensitive.npy')
     resistant = np.load(f'{path}/resistant.npy')
     nutrients = np.load(f'{path}/nutrients.npy')
@@ -64,7 +64,7 @@ def plot_frame(save_name, frame, treatment):
     alpha_sen, alpha_res = sen_norm[..., None], res_norm[..., None]
     rgb_add = res_rgb * alpha_res + sen_rgb * alpha_sen * (1 - alpha_res)
 
-    fig, ax = plt.subplots(figsize=(1.6,1.6), dpi=300)
+    fig, ax = plt.subplots(figsize=(1.1,1.1), dpi=300)
     alpha = np.where(sensitive[frame] > 1/params['mutation_scaling'], 1, 0)
     alpha = np.where(resistant[frame] > 1/params['mutation_scaling'], 1, alpha)
     rgba = np.dstack([rgb_add, alpha])
@@ -73,26 +73,27 @@ def plot_frame(save_name, frame, treatment):
         ax.hlines(100, 0, 100, color='black', linewidth=0.6)
     ax.axis('off')
     ax.hlines(100, 50, 100, color='black', linewidth=0.6)
-    plt.savefig(fr'{save_name}_{frame}_cells.pdf', dpi=300, transparent=True, bbox_inches='tight')
+    plt.savefig(fr'Figure_4/panel_g/{save_name}_{frame}_cells.pdf', dpi=300, transparent=True, bbox_inches='tight')
     plt.close()
 
     colors = [(0, (1, 1, 1)),  # white
               (1, (227 / 255, 66 / 255, 52 / 255))]  # vermilion red
     cmap = mpl.colors.LinearSegmentedColormap.from_list("black_green_white", colors, N=256)
 
-    fig, ax = plt.subplots(figsize=(6,6), dpi=300)
+    fig, ax = plt.subplots(figsize=(1.3,1.3), dpi=300)
     ax.imshow(nutrients[frame], interpolation='none', cmap=cmap)
     if frame == 651:
         scale_bar_length = 1000/(13.76 * 8.648)  # mm = 1000µm / (sim_to_exp_px * exp_px_to_µm)
         ax.hlines(190, 10, 10 + scale_bar_length*2, color='black', linewidth=3)
     ax.axis('off')
-    plt.savefig(fr'{save_name}_{frame}_nutrients.pdf', dpi=300, transparent=True, bbox_inches='tight')
+    plt.savefig(fr'Figure_4/panel_g/{save_name}_{frame}_nutrients.pdf', dpi=300, transparent=True, bbox_inches='tight')
     plt.close()
 
 
 def main():
+    params = torch.load(f'data/sim_data/met_6_5_18/met_6_5_18_0/params.pth')
     treatments = ['met_4_18', 'met_6_5_18', 'met_9_18']
-    frames = [2751, 2751, 2751]
+    frames = [2400 + params['start_point'], 2400 + params['start_point'], 2400 + params['start_point']]
     for i in range(len(treatments)):
         plot_frame(treatments[i], frame=frames[i], treatment=treatments[i])
 

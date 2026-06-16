@@ -1,0 +1,9 @@
+output_dir: "Validation/results/end_to_end"
+maxiter_dispersion: !!int 2100
+maxiter_mutation_rate: !!int 2100
+fit_sim_replicas: !!int 15
+test_sim_replicas: !!int 50
+min_duration_frames: !!int 10
+min_distance_um: !!float 100.0
+num_workers: !!int 12
+run_full_data_refit: !!bool False

@@ -1,0 +1,24 @@
+params_path: params.yaml
+save_folder: data/sweeps/spatial_treatment_0_gradient
+output_folder: Spatial_treatment/plots
+show_plot: false
+tau_on_range:
+- 0
+- 40
+- 10
+tau_off_range:
+- 0
+- 80
+- 10
+num_replicates: 2
+mutation_rate_values:
+duration:
+num_cpus:
+inverse_gradient_decay_length: 0.0
+gradient_mode: exponential
+gradient_floor: 0.0
+occupancy_threshold:
+ratio_metric: ttp
+steps_per_hour: 20.0
+ttp_threshold: 71.0
+wait_poll_seconds: 1.0

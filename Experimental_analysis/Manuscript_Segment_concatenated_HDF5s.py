@@ -2,8 +2,6 @@ from os import path
 import subprocess
 import h5py
 
-from czi_segmenter_auguste import identifier
-
 
 def get_number_of_datasets(path):
     """

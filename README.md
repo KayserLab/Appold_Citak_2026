@@ -38,7 +38,7 @@ The code was run and tested on Windows 11 (Version 24H2, Build 26100.7623)
 #### Python requirements
 - Python `3.11`. (The package `aicsimageio` requires python 3.11, if only code without this package is run (e.g. simulation code) newer python versions are also supported)
 - Python packages in `requirements.txt`:
-  - `matplotlib`, `numpy`, `pandas`, `pyyaml`, `scikit-image`, `scipy`, `torch`, `tqdm`, `dask`, `h5py`, `opencv-python`, `seaborn`, `statsmodels`, `trackpy`, `aicsimageio`.
+  - `matplotlib`, `numpy`, `pandas`, `pyyaml`, `scikit-image`, `scipy`, `torch`, `tqdm`, `dask`, `h5py`, `opencv-python`, `seaborn`, `statsmodels`, `trackpy`, `aicsimageio`, `openpyxl`.
 - Optional for video export: `ffmpeg` (required by `matplotlib.animation.FFMpegWriter`).
 
 ### Hardware
@@ -85,15 +85,13 @@ In the folder `demo/demo_figures` are the scripts `figure_4_sweep_demo.py` and `
 
 The `kymo_demo.py` file will create a kymograph of the 6.5h/18h treatment schedule. Important: It is necessary to run the `demo.py` file before the create the needed data!
 
-The figure plots demo files need to be run from the root directory.
-
 ### Simulation Movie
 
 To create a video of the created simulation change the path in the main function of `source/visualization/animate_colonies.py` to
 ```bash
-path = 'demo/demo_data/met_6_5_18/met_6_5_18_0'
+path = 'data/demo/met_6_5_18/met_6_5_18_0'
 ```
-and run the script from the root directory. The created video will be saved in the videos folder. Important: It is necessary to run the `demo.py` file before the create the needed data! (Note: ffmpeg is required to create videos)
+and run the script. The created video will be saved in the videos folder. Important: It is necessary to run the `demo.py` file before the create the needed data! (Note: ffmpeg is required to create videos)
 
 ## General Use
 
@@ -106,13 +104,33 @@ Run the `source/create_simulation_data.py` script:
 Default output path pattern:
 - `data/sim_data/<treatment>/<treatment>_<replicate>/`
 
+#### Cytotoxic Treatment
+
+To create the cytotoxic treatment data run `Cytotoxic_treatment/cytotocix_treatment_sweep.py` with the relevant parameters defined in the default `spatial_treatment_config.yaml`. This includes the plot creation.
+
+#### Spatial Treatment
+
+To create the spatial treatment data run `Spatial_treatment/spatial_treatment_sweep.py` with a `max_sensitive_death` rate defined in the default config. This includes the plot creation.
+
+#### Bifurcation Analysis
+
+To create the data and plots for the Bifurcation Analysis run the scripts in the bifurcation folder and `SI_Figures/plot_resistant_fraction_distribution.py`. It may be necessary to adjust parameters in their config files as well as in the `params.yaml` file to recreate everything.
+
+#### LOOCV
+
+To validate the fitting of the simulation run the `Validation/validate_end_to_end_loocv.py`. The results are saved in the `Validation/results/end_to_end/end_to_end_loocv_{run_id}` directory.
+
+#### Ridge Uncertainty
+
+To create the data needed for `Figure_4/uncertainty_ridge_positions.py` run the `Ùncertainty_rige/run_unceratinty_ridge_sweep.py` script first.
+
 ### 2. Create parameter sweeps
 
 Run `source/executable.py` with the wanted sweep parameters set in `params.yaml` to create the sweep data. Then run the `Figure_4/panel_a_c/create_sweep_arrays.py` to get the analysed sweeps arrays, which are used by other scripts.
 
 ### 3. Generate figures
 
-Figure scripts are organized in `Figure_1` ... `Figure_5` and `SI_Figures`.
+Figure scripts are organized in `Figure_1` ... `Figure_5` and `SI_Figures`. 
 
 After creating the simulation data in step 1 and putting the experimental data in the corresponding folder (see [Overview](#overview)) the panel scripts can be run to create the figure panels.
 
@@ -125,16 +143,23 @@ This script requires `ffmpeg`.
 ### 5. Run parameter fitting
 
 Important:
-- Fitting scripts expect specific experimental data folders in the fit folder: `source/fit/fit_data/no_treatemnt_csv/...`, `source/fit/fit_data/mutation_rate/...` (this should be continuous dose data).
 - Ensure the folder `fit` contains the following subfolder:
   - `logs_fitting`
   - `fit_results`
-  - `fit_data`
 
+For the fit first run:
+- `source/fit/parameter_fitting/measure_single_cell_area_from_czi.py`
+and then run the bootstrapping scipt:
+- `source/fit/parameter_fitting/bootstrapping/bootstrap_parameter_uncertainties.py`
+
+The fit outcome is the point estimate under `source/fit/fit_results/bootstrap_uncertainties/run_{run_id}/bootstrap_summary.csv`
+
+Legacy fitting (may need further adjustemts by the user):
 Fit in the following order, always adjusting the parameters to the newest value:
 - `source/fit/parameter_fitting/fit_disperion_and_nutrients.py`
 - `source/fit/parameter_fitting/fit_mutation_rate.py`
-- `source/fit/parameter_fitting/fit_mutation_scaling.py`
+- `source/fit/parameter_fitting/measure_single_cell_area_from_czi.py`
+- `source/fit/parameter_fitting/calculate_mean_cell_area_from_csv.py` to derive `mutation_scaling`
 
 Note: The growth rates are calculated directly from plate reader experiments in `source/fit/parameter_fitting/calc_growth_rates.py`.
 

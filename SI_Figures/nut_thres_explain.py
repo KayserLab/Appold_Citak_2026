@@ -29,5 +29,5 @@ plt.axhline(y=1/(1+np.exp(2)), color='#e34234', alpha=0.8, label=r'$\mathrm{N}_{
 plt.axhline(y=1/(1+np.exp(-2)), color='#e34234', alpha=0.8, label=r'$\mathrm{N}_{\mathrm{high}}$')
 plt.plot(0, 0.5, 'ro', markersize=4)
 plt.legend(frameon=False)
-plt.savefig('nut_thres_explain.pdf', bbox_inches='tight')
+plt.savefig('SI_Figures/plots/nut_thres_explain.pdf', bbox_inches='tight')
 plt.show()

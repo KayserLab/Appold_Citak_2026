@@ -17,9 +17,9 @@ plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
 def load_sim_data(path):
-    sen = np.load(f'{path}/sensitive.npy')[1200]
-    res = np.load(f'{path}/resistant.npy')[1200]
-    nut = np.load(f'{path}/nutrients.npy')[1200]
+    sen = np.load(f'{path}/sensitive.npy')[850]
+    res = np.load(f'{path}/resistant.npy')[850]
+    nut = np.load(f'{path}/nutrients.npy')[850]
     params = torch.load(f'{path}/params.pth')
 
     radii_sen = []
@@ -60,10 +60,10 @@ def calc_effective_growth_layer(nut_ar, nut_int, radius):
     return eff_growth_layer
 
 print('To generate this data run the SI_Figures/no_mutation_kymo.py script with ct treatment!')
-path = '../../data/sim_data/ct_no_mut'  # to generate this data run the SI_Figures/no_mutation_kymo.py script with ct treatment
-sen = np.load(f'{path}/sensitive.npy')[1200]
-res = np.load(f'{path}/resistant.npy')[1200]
-nut = np.load(f'{path}/nutrients.npy')[1200]
+path = 'data/sim_data/ct_no_mut'  # to generate this data run the SI_Figures/no_mutation_kymo.py script with ct treatment
+sen = np.load(f'{path}/sensitive.npy')[850]
+res = np.load(f'{path}/resistant.npy')[850]
+nut = np.load(f'{path}/nutrients.npy')[850]
 params = torch.load(f'{path}/params.pth')
 
 formatter = ScalarFormatter(useMathText=True)
@@ -101,12 +101,12 @@ ax.fill_between(x, 0, sen[100][:100][::-1]*params['mutation_scaling'], color='ro
 ax1.axhline(1/(np.exp(2)+1), color='#e34234', lw=0.8, label='Nutrient threshold low', alpha=0.5)
 ax1.axhline(1/(np.exp(-2)+1), color='#e34234', lw=0.8, label='Nutrient threshold high', alpha=0.5)
 
-ax.set_xlim(0, 23*px_to_mm)
-ax.set_ylim(0, 1*params['mutation_scaling'])
+ax.set_xlim(0, 25*px_to_mm)
+ax.set_ylim(0, 1.3*params['mutation_scaling'])
 ax1.set_ylim(0, 1)
 ax1.set_ylabel('Nutrient concentration', rotation=270, labelpad=8, color='#e34234')
 ax.set_ylabel('Cell density, 1/deme', color='royalblue', labelpad=1)
 ax.set_xlabel('Distance to Center (mm)')
 plt.tight_layout()
-plt.savefig(r'nutrient_profile.pdf', dpi=300, transparent=True)
+plt.savefig(r'Figure_3/panel_d/nutrient_profile.pdf', dpi=300, transparent=True)
 plt.show()

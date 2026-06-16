@@ -10,32 +10,29 @@ import scipy.optimize as opt
 def run_sim_start():
     sim1 = cr.DiffusionModel2D()
     sim1.params['mutations_active'] = False
-    sim1.params['image_size'] = 200
     sim1.params['save_in_core'] = True
     time = 750 + sim1.params['start_point']
     sim1.treatment_times = np.zeros(time)
     sim1.params['total_time'] = time
-    sim1.params['save_results'] = 'SI_Figures/data/sim_data/breakouts'
+    sim1.params['save_results'] = 'data/sim_data/breakouts'
     sim1.run_simulation(save_without_asking=True)
 
 def run_sim():
-    for j in range(223, 800, 1):
+    for j in range(238, 800, 1):
         sim = cr.DiffusionModel2D()
-        sim.params['total_time'] = 3683
-        sim.params['image_size'] = 200
         sim.params['mutations_active'] = False
-        sim.treatment_efficacy = 0.0
+        sim.treatment_efficacy = 0.05
         sim.treatment_times = np.zeros(sim.params['total_time'], dtype=bool)
         sim.set_random_seed()
         sim.prev_treatment = True
-        sensitive = np.load('../../data/sim_data/breakouts/sensitive.npy')[-30]
-        resistant = np.load('../../data/sim_data/breakouts/resistant.npy')[-30]
-        nutrients = np.load('../../data/sim_data/breakouts/nutrients.npy')[-30]
-        resistant[84, 84] = j / sim.params['mutation_scaling']
-        resistant[100, 121] = j / sim.params['mutation_scaling']
-        print(sensitive[84, 83] * sim.params['mutation_scaling'], sensitive[100, 122]*sim.params['mutation_scaling'])
-        print(sensitive[83, 83] * sim.params['mutation_scaling'], sensitive[84, 82] * sim.params['mutation_scaling'])
-        print(sensitive[85, 83] * sim.params['mutation_scaling'], sensitive[84, 84] * sim.params['mutation_scaling'])
+        sensitive = np.load('data/sim_data/breakouts/sensitive.npy')[-30]
+        resistant = np.load('data/sim_data/breakouts/resistant.npy')[-30]
+        nutrients = np.load('data/sim_data/breakouts/nutrients.npy')[-30]
+        resistant[83, 83] = j / sim.params['mutation_scaling']
+        resistant[100, 123] = j / sim.params['mutation_scaling']
+        # print(sensitive[83, 82] * sim.params['mutation_scaling'], sensitive[100, 122]*sim.params['mutation_scaling'])
+        # print(sensitive[82, 82] * sim.params['mutation_scaling'], sensitive[84, 82] * sim.params['mutation_scaling'])
+        # print(sensitive[84, 82] * sim.params['mutation_scaling'], sensitive[83, 83] * sim.params['mutation_scaling'])
         # plt.figure(dpi=300)
         # plt.imshow(np.stack([resistant/np.max(resistant), sensitive/np.max(sensitive), np.zeros_like(sensitive)], axis=-1))
         # plt.imshow(sensitive >= 1 / sim.params['mutation_scaling'], alpha=0.3, cmap='gray')
@@ -62,26 +59,38 @@ def plot_and_fit():
         return y
     treat_effics = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0]
     # break_num = [498, 491, 468, 434, 393, 347, 300, 254, 210, 171, 135, 105, 79, 59, 42, 30, 20, 13, 8, 5, 3]
-    break_num = [224, 182, 146, 117, 91, 71, 54, 41, 30, 21, 15, 11, 7, 5, 3, 2, 2, 1, 1, 1, 1]
+    break_num_diagonal = [156, 131, 109, 89, 72, 58, 46, 36, 28, 21, 16, 12, 9, 6, 4, 3, 2, 2, 1, 1, 1]  # diagonal
+    break_num_horizontal = [287, 240, 201, 167, 137, 111, 90, 71, 56, 43, 33, 25, 18, 13, 9, 7, 5, 3, 3, 2, 2]  # horizontal
 
-    def sigmoid_test(x):
-        y = 5.85696873e+02 / (1 + np.exp(6.00627550 * (x + 7.93420507e-02))) - 1.38418863
+    def sigmoid_diagonal(x):
+        y = 3.87401421e+02 / (1 + np.exp(5.33988821 * (x + 7.21574279e-02))) - 1.25396977
         return y
 
-    p0 = [max(break_num), np.median(treat_effics),1,min(break_num)] # this is an mandatory initial guess
-    popt = opt.curve_fit(sigmoid, treat_effics, break_num, p0)
-    print(f'Fitted parameters: {popt[0]}')
-    x_fit = np.linspace(0, 1, 100)
-    y_fit = sigmoid(x_fit, *popt[0])
+    def sigmoid_horizontal(x):
+        y = 7.78241196e+02 / (1 + np.exp(4.94935493 * (x + 1.06728521e-01))) - 3.38920380
+        return y
 
-    plt.plot(treat_effics, break_num, 'o-', label='Data', linewidth=2)
-    plt.plot(x_fit, y_fit, '--', label='Fitted Sigmoid', linewidth=2)
-    plt.plot(x_fit, sigmoid_test(x_fit), ':', label='Old Sigmoid', linewidth=2)
+    p0 = [max(break_num_diagonal), np.median(treat_effics),1,min(break_num_diagonal)] # this is an mandatory initial guess
+    popt = opt.curve_fit(sigmoid, treat_effics, break_num_diagonal, p0)
+    print(f'Fitted parameters: {popt[0]}')
+    p0_1 = [max(break_num_horizontal), np.median(treat_effics),1,min(break_num_horizontal)] # this is an mandatory initial guess
+    popt_1 = opt.curve_fit(sigmoid, treat_effics, break_num_horizontal, p0_1)
+    print(f'Fitted parameters: {popt_1[0]}')
+    x_fit = np.linspace(0, 1, 100)
+    y_fit_1 = sigmoid(x_fit, *popt[0])
+    y_fit_2 = sigmoid(x_fit, *popt_1[0])
+
+    plt.plot(treat_effics, break_num_diagonal, 'o-', label='Data', linewidth=2)
+    plt.plot(treat_effics, break_num_horizontal, 's-', label='Data', linewidth=2)
+    plt.plot(x_fit, y_fit_1, '--', label='Fitted Sigmoid (diagonal)', linewidth=2)
+    plt.plot(x_fit, y_fit_2, ':', label='Fitted Sigmoid (horizontal)', linewidth=2)
+    plt.plot(x_fit, sigmoid_diagonal(x_fit), ':', label='Old Sigmoid (diagonal)', linewidth=2)
+    plt.plot(x_fit, sigmoid_horizontal(x_fit), '--', label='Old Sigmoid (horizontal)', linewidth=2)
     plt.xlabel('Treatment Efficacy')
     plt.ylabel('Number of Resistant Cells at Breakout')
     plt.title('Breakout Analysis')
     plt.legend()
-    plt.savefig('breakout.pdf')
+    plt.savefig('SI_Figures/plots/breakout.pdf')
     plt.show()
 
 def main():

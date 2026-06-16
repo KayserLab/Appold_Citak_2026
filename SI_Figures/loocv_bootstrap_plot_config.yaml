@@ -1,0 +1,70 @@
+loocv_run_dir: null
+bootstrap_run_dir: null
+loocv_results_root: Validation/results/end_to_end
+bootstrap_results_root: source/fit/fit_results/bootstrap_uncertainties
+output_dir: SI_Figures/plots/loocv_bootstrap_summary
+output_stem: loocv_bootstrap_summary
+dpi: 300
+bootstrap_ci_level: 95
+bootstrap_output_stem: bootstrap_parameter_uncertainty
+loocv_prediction:
+  output_stem: loocv_clone_count_prediction
+  observed_column: test_clone_count
+  predicted_column: test_predicted_clone_mean
+  prediction_std_column: test_predicted_clone_std
+  relative_error_column: test_relative_abs_error
+  color: "#287d8e"
+  title: "LOOCV: held-out prediction"
+  xlabel: "Observed resistant clone count"
+  ylabel: "Predicted resistant clone count"
+loocv_headline_metrics:
+  - label: "Area NRMSE"
+    column: test_area_nrmse
+    format: "{:.3f}"
+  - label: "Regrowth RMSE"
+    column: test_regrowth_time_rmse_h
+    format: "{:.1f} h"
+  - label: "Clone rel. error"
+    column: test_relative_abs_error
+    format: "{:.2f}"
+loocv_area_prediction:
+  output_stem: loocv_area_trajectory_prediction
+  color: "#287d8e"
+  title: "LOOCV: area trajectory prediction"
+  plot_kind: simulated_scatter
+  fold_mode: all_folds
+  timepoint_stride: 1
+  area_scale_um_per_pixel: 8.648
+  group_column: held_out_no_treatment_label
+  value_column: test_area_nrmse
+  secondary_value_column: test_area_r2
+  xlabel: "Observed colony area (mm^2)"
+  ylabel: "Predicted colony area (mm^2)"
+  metric_xlabel: "Area trajectory NRMSE"
+  label_prefix: "colony_data_"
+  label_suffix: "_with_clonearea.csv"
+  value_format: "{:.3f}"
+  secondary_label: "Area R2"
+  secondary_format: "{:.3f}"
+bootstrap_parameters:
+  - parameter: regrowth_t0_h
+    label: "Regrowth onset"
+    unit: "h"
+  - parameter: regrowth_slope_um_per_h
+    label: "Regrowth slope"
+    unit: "um/h"
+  - parameter: diffusion_sensitive
+    label: "Cell diffusion"
+    unit: "sim units"
+  - parameter: uptake_rate
+    label: "Nutrient uptake"
+    unit: "sim units"
+  - parameter: diffusion_nutrients
+    label: "Nutrient diffusion"
+    unit: "sim units"
+  - parameter: start_point_from_dispersion_fit
+    label: "Start point"
+    unit: "steps"
+  - parameter: mutation_rate
+    label: "Mutation rate"
+    unit: "rate units"

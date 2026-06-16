@@ -16,7 +16,7 @@ def read_requirements(path: str) -> list[str]:
 setup(
     name="appold-citak-2026",
     description="Simulation and analysis code for Appold/Citak 2026.",
-    packages=find_packages(include=["source", "source.*"]),
+    packages=find_packages(include=["source", "source.*", "Validation", "Validation.*"]),
     install_requires=read_requirements("requirements.txt"),
     python_requires=">=3.11,<3.12",
 )

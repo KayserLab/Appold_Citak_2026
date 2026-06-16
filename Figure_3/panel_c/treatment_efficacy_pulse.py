@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import source.run_core as rc
+import torch
 
 def main(treat_on, treat_off):
     rc.main(treat_on, treat_off, save_dir=f'data/sim_data/treat_effic_pulse_400', pulse=True, pulse_duration=400)
+    params = torch.load(f'data/sim_data/treat_effic_pulse_400/params.pth')
 
     plt.rcParams.update({'font.size': 7,
                          'pdf.fonttype': 42,
@@ -19,7 +21,7 @@ def main(treat_on, treat_off):
     plt.rcParams['xtick.labelsize'] = 6
     plt.rcParams['ytick.labelsize'] = 6
 
-    treat_effic = np.load(f'../../data/sim_data/treat_effic_pulse_400/treatment_efficacy.npy')[351:3483]
+    treat_effic = np.load(f'data/sim_data/treat_effic_pulse_400/treatment_efficacy.npy')[params['start_point']:3483]
     treat_effic = -treat_effic + 1
     x = np.array(range(len(treat_effic)))
 
@@ -33,7 +35,7 @@ def main(treat_on, treat_off):
     ax.axvspan(18, 38, color='#bfbfbf', alpha=1, label='Treatment', lw=0)
     ax.text(25, 1.02, r'$\tau_{on}$', fontsize=7, color='gray', fontdict=None)
     plt.tight_layout()
-    plt.savefig(r'treatment_efficacy.pdf', dpi=300, transparent=True)
+    plt.savefig(r'Figure_3/panel_c/treatment_efficacy.pdf', dpi=300, transparent=True)
     plt.show()
 
 if __name__ == '__main__':

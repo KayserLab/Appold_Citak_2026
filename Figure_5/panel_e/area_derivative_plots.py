@@ -75,7 +75,7 @@ def calc_treatment_efficacy(treat_on, treat_off, params):
 
 
 def get_data(path):
-    exp_data_list = [i for i in os.listdir(path) if i.startswith('colony') and i.endswith('clonearea.csv')]
+    exp_data_list = [i for i in os.listdir(path) if i.startswith('colony') and i.endswith('final.csv')]
     exp_data = []
     for i in exp_data_list:
         exp_data.append(pd.read_csv(f'{path}/{i}'))
@@ -88,9 +88,9 @@ def median_over_area_derivative(exp_data):
     temp_res = []
     temp_total = []
     for exp in exp_data:
-        area_derivative_sen = np.gradient(exp['colony_area']*(8.648**2)/1e6 - exp['total_clone_area']*(8.648**2)/1e6, dt)
-        area_derivative_total = np.gradient(exp['colony_area']*(8.648**2)/1e6, dt)
-        area_derivative_res = np.gradient(exp['total_clone_area']*(8.648**2)/1e6, dt)
+        area_derivative_sen = np.gradient(exp['extrapolated_total_area']*(8.648**2)/1e6 - exp['extrapolated_clone_area']*(8.648**2)/1e6, dt)
+        area_derivative_total = np.gradient(exp['extrapolated_total_area']*(8.648**2)/1e6, dt)
+        area_derivative_res = np.gradient(exp['extrapolated_clone_area']*(8.648**2)/1e6, dt)
         temp_res.append(area_derivative_res)
         temp_sen.append(area_derivative_sen)
         temp_total.append(area_derivative_total)
@@ -108,7 +108,7 @@ def rolling_median(data, window_size):
 
 
 def main(path, t_on, t_off, save_name, color):
-    treatment_starts, treatment_ends = calc_treatment_efficacy(t_on, t_off, get_params())
+    treatment_starts, treatment_ends = calc_treatment_efficacy(t_on, t_off, get_params())  # np.array([37, 110, 189]) - 1, np.array([61, 141, 284]) - 1 
     exp_data = get_data(path)
     median_area_derivative_sen, median_area_derivative_res, sen_iqr, res_iqr, total = median_over_area_derivative(exp_data)
 
@@ -144,12 +144,13 @@ def main(path, t_on, t_off, save_name, color):
     med_x_pos = [treatment_starts[i]/2 + (treatment_starts[i+1]/2 - treatment_starts[i]/2)/2 for i in range(len(treatment_starts)-1)]
     med_y_int = [np.sum(median_area_derivative_sen[int(treatment_starts[i]):int(treatment_starts[i+1])])/(treatment_starts[i+1] - treatment_starts[i]) for i in range(len(treatment_starts)-1)]
 
+    print(len(med_x_pos), len(med_y_int))
     ax.plot(x, median_area_derivative_res, lw=1, color=color, zorder=20, linestyle=':', label='Resistant')
     # ax.plot(x, total, lw=1, color='black', zorder=20, label='Total')
-    ax.fill_between(x, rolling_median(res_iqr[0], window_size=9), rolling_median(res_iqr[1], window_size=9), color=color, alpha=0.3, zorder=10,
-                    lw=0)
+    ax.fill_between(x, rolling_median(res_iqr[0], window_size=9), rolling_median(res_iqr[1], window_size=9), color=color, alpha=0.3, zorder=10, lw=0)
 
-    ax.plot(med_x_pos[:-2], med_y_int[:-2], marker='o', color='green', markersize=1.5, linestyle='-.', label='Sensitive cycle average', zorder=30, lw=1)
+    ax.plot(med_x_pos[:-3], med_y_int[:-3], marker='o', color='green', markersize=1.5, linestyle='-.', label='Sensitive cycle average', zorder=30, lw=1)
+
     ax.legend(frameon=False, fontsize=5)#, loc='upper left')
     # plt.tight_layout()
     plt.savefig(f'{save_name}.pdf', transparent=True)
@@ -176,15 +177,15 @@ def main(path, t_on, t_off, save_name, color):
 
 
 if __name__ == "__main__":
-    path = r'../../data/exp_data/met_6_5_18_csv'
-    save_name = 'growth_speeds_6_5_18'
-    treat_on = 130
-    treat_off = 360
+    path = r'data/exp_data/9h_20.5h' 
+    save_name = 'growth_speeds_9_20_5'
+    treat_on = 180
+    treat_off = 410
 
     # no_treatment = 0
     # 4_18 = 4
     # 6_18 = 8
     # 9_18 = 12
     # continuous = 16
-    color = mpl.colormaps.get_cmap('tab20b').colors[8]
+    color = 'plum'  # mpl.colormaps.get_cmap('tab20b').colors[8]
     main(path, treat_on, treat_off, save_name, color)

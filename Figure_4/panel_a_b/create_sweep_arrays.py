@@ -70,7 +70,7 @@ def build_sweep_indices(params):
     treat_off = np.linspace(params['treatment_off_min'], params['treatment_off_max'], num_treatment_off_steps, dtype=np.int16)
 
     num_mutation_rate_steps = int((params['mutation_rate_max'] - params['mutation_rate_min']) / params['mutation_rate_step']) + 1
-    mutation_rates = np.linspace(params['mutation_rate_min'], params['mutation_rate_max'], num_mutation_rate_steps)
+    mutation_rates = np.linspace(params['mutation_rate_min'], params['mutation_rate_max'], num_mutation_rate_steps)  # [0.29251213431358345, 0.5850242686271669, 0.87753640294075035]
     replicas = params['num_replicas']
     return treat_on, treat_off, mutation_rates, replicas
 
@@ -78,8 +78,8 @@ def create_array(folder):
     params = get_params()
     treat_on, treat_off, mutation_rates, replicas = build_sweep_indices(params)
     treat_on_len, treat_off_len, mutation_rates_len = len(treat_on), len(treat_off), len(mutation_rates)
+    print(mutation_rates)
     img_size = params['image_size']
-
     bytes_per_cond = img_size * img_size * np.dtype(np.float32).itemsize * replicas
     bytes_per_treat_effic = params['total_time'] * np.dtype(np.float32).itemsize * replicas
 
@@ -200,7 +200,7 @@ def create_array(folder):
 
                 for j, lst in enumerate(size):
                     for i, val in enumerate(lst):
-                        if val >= 71:
+                        if val >= 78:
                             ttp_size.append((i - params['start_point'])/20)
                             ttp_ratio.append(ratio[j, i])
                             ttp_ratio_endpoint.append(ratio[j, -1])
@@ -234,18 +234,18 @@ def create_array(folder):
 
 
 def main():
-    folder = '../../data/sweeps/last_sweep_v0'
+    folder = 'data/sweeps/rebuttal_sweep_final'
 
     size_array, ratio_array, ratio_q1_array, ratio_q3_array, size_q1_array, size_q3_array, ratio_endpoint_array,  ratio_endpoint_q1_array,  ratio_endpoint_q3_array = create_array(folder)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_size_array.npy', size_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_array.npy', ratio_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_size_q1_array.npy', size_q1_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_size_q3_array.npy', size_q3_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_q1_array.npy', ratio_q1_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_q3_array.npy', ratio_q3_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_endpoint_array.npy', ratio_endpoint_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_endpoint_q1_array.npy', ratio_endpoint_q1_array)
-    np.save(f'../../data/sweep_arrays/last_sweep_v0_ratio_endpoint_q3_array.npy', ratio_endpoint_q3_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_size_array.npy', size_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_array.npy', ratio_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_size_q1_array.npy', size_q1_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_size_q3_array.npy', size_q3_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_q1_array.npy', ratio_q1_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_q3_array.npy', ratio_q3_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_endpoint_array.npy', ratio_endpoint_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_endpoint_q1_array.npy', ratio_endpoint_q1_array)
+    np.save(f'data/sweep_arrays/rebuttal_sweep_final_ratio_endpoint_q3_array.npy', ratio_endpoint_q3_array)
     # (sweep_array_total_mean, sweep_array_resistant, sweep_array_breakouts, sweep_array_rations, sweep_array_total_var, sweep_array_total_median,
     #  sweep_array_total_q1, sweep_array_total_q3, sweep_array_mean_area, sweep_array_var_area, sweep_array_median_area, sweep_array_q1_area,
     #  sweep_array_q3_area, sweep_array_ratio_median, sweep_array_ratio_mean_area, sweep_array_ratio_median_area) = create_array(folder)

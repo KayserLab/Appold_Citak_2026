@@ -59,7 +59,7 @@ def calc_treatment_efficacy(treat_on, treat_off, params):
     release_delay = params['release_delay']
 
     # number of steps in the lag phase after treatment ends
-    lag_on_steps = params.get('lag_on_steps', 220)
+    lag_on_steps = params['lag_steps']
 
     treatment_efficacy = 0.0
     results = []
@@ -73,7 +73,7 @@ def calc_treatment_efficacy(treat_on, treat_off, params):
         current_treatment = bool(treatment_times[i])
 
         if prev_treatment and not current_treatment:
-            extra_steps_remaining = 30
+            extra_steps_remaining = params['overshoot_steps']
             print(extra_steps_remaining)
             lag_steps_remaining = lag_on_steps
 
@@ -135,10 +135,11 @@ def plot_treat_effic(treat_on_duration, treat_off_duration):
     # plt.xlim(350, 370)
     # plt.axvline(360, color='red', linestyle='--', linewidth=0.8)
     # plt.axvline(590, color='red', linestyle='--', linewidth=0.8)
-    plt.savefig(f'treat_effic_{treat_on_duration}_{treat_off_duration}.pdf', transparent=True)
+    plt.savefig(f'SI_Figures/plots/treat_effic_{treat_on_duration}_{treat_off_duration}.pdf', transparent=True)
     plt.show()
 
 
-treat_on_duration = 4 # in hours
-treat_off_duration = 18  # in hours
-plot_treat_effic(treat_on_duration, treat_off_duration)
+treat_on_durations = [4 , 6.5, 9]  # in hours
+treat_off_durations = [18, 18, 18]  # in hours
+for i in range(len(treat_on_durations)):
+    plot_treat_effic(treat_on_durations[i], treat_off_durations[i])

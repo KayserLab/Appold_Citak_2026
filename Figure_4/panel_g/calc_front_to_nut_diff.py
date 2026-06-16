@@ -41,10 +41,10 @@ def calc_treatment_efficacy(treat_on, treat_off, params):
 
 
 def load_sim_data(path):
-    sen = np.load(f'{path}/sensitive.npy')[351:]
-    res = np.load(f'{path}/resistant.npy')[351:]
-    nut = np.load(f'{path}/nutrients.npy')[351:]
     params = torch.load(f'{path}/params.pth')
+    sen = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    res = np.load(f'{path}/resistant.npy')[params['start_point']:]
+    nut = np.load(f'{path}/nutrients.npy')[params['start_point']:]
 
     radii_sen = []
     radii_res = []
@@ -87,9 +87,9 @@ def rolling_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
 def generate_kymograph_from_sim_data(path):
-    sensitive = np.load(f'{path}/sensitive.npy')[351:]
-    resistant = np.load(f'{path}/resistant.npy')[351:]
     params = torch.load(f'{path}/params.pth')
+    sensitive = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    resistant = np.load(f'{path}/resistant.npy')[params['start_point']:]
 
     kymograph = []
     for i in range(len(sensitive)):
@@ -138,7 +138,7 @@ def generate_kymograph_from_sim_data(path):
 
 
 def main(treatment):
-    path = f'../../data/sim_data/{treatment}/{treatment}_0'
+    path = f'data/sim_data/{treatment}/{treatment}_0'
     rad_sen, nut, nut_front = load_sim_data(path)
     kymograph = generate_kymograph_from_sim_data(path)
 
@@ -171,7 +171,7 @@ def main(treatment):
     px_to_mm = 13.76 * 8.648 / 1e3
     Ny = kymograph.shape[1]
 
-    plt.figure(figsize=(8.4/3, 7.1/5), dpi=300)
+    plt.figure(figsize=(8.4/3, 7.1/6), dpi=300)
     for i in range(len(treat_starts_test)):
         plt.axvspan(treat_starts_test[i] / 20, treat_ends_test[i] / 20, color='#bfbfbf', alpha=1, lw=0, zorder=0)
     plt.imshow(kymograph.transpose(1,0,2), origin='lower', aspect='auto',  extent=[0, len(rad_sen)/20, 0, Ny * px_to_mm])
@@ -185,7 +185,7 @@ def main(treatment):
         plt.legend(frameon=False, loc='upper left', ncol=2, bbox_to_anchor=(0, 1.04))
     else:
         plt.tick_params(axis='y', labelleft=False)
-    plt.savefig(fr'{treatment}_kymo.pdf', transparent=True, bbox_inches='tight')
+    plt.savefig(fr'Figure_4/panel_g/{treatment}_kymo.pdf', transparent=True, bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":

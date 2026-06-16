@@ -18,10 +18,10 @@ plt.rcParams['ytick.labelsize'] = 6
 
 
 def load_sim_data(path):
-    sen = np.load(f'{path}/sensitive.npy')[351:]
-    res = np.load(f'{path}/resistant.npy')[351:]
-    nut = np.load(f'{path}/nutrients.npy')[351:]
     params = torch.load(f'{path}/params.pth')
+    sen = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    res = np.load(f'{path}/resistant.npy')[params['start_point']:]
+    nut = np.load(f'{path}/nutrients.npy')[params['start_point']:]
 
     radii_sen = []
     radii_res = []
@@ -65,10 +65,10 @@ def rolling_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
 def generate_kymograph_from_sim_data(path):
-    sensitive = np.load(f'{path}/sensitive.npy')[351:]
-    resistant = np.load(f'{path}/resistant.npy')[351:]
     params = torch.load(f'{path}/params.pth')
-
+    sensitive = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    resistant = np.load(f'{path}/resistant.npy')[params['start_point']:]
+    
     kymograph = []
     for i in range(len(sensitive)):
         if i % 20 != 0:
@@ -114,7 +114,7 @@ def generate_kymograph_from_sim_data(path):
     kymograph = np.array(kymograph)
     return kymograph
 
-path = '../../data/sim_data/continuous_dose/continuous_dose_0'
+path = 'data/sim_data/continuous_dose/continuous_dose_0'
 rad_sen, nut, nut_front = load_sim_data(path)
 kymograph = generate_kymograph_from_sim_data(path)
 
@@ -154,5 +154,5 @@ plt.xlabel('Time (h)')
 plt.ylabel('Radial position (mm)')
 plt.legend(frameon=False, loc='upper left', ncol=2)
 plt.tight_layout()
-plt.savefig(r'ct_kymo.pdf', dpi=300, transparent=True)
+plt.savefig(r'Figure_3/panel_f/ct_kymo.pdf', dpi=300, transparent=True)
 plt.show()

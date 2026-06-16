@@ -15,8 +15,8 @@ class FitMutationRate:
         self.sim_params = self.get_params()
         self.params = {'contour_frame_index': 63,
                        'max_first_frame': 230,
-                       'treatment_start': self.sim_params['start_point'] + 360} # check for start_point and adjust if needed (start_point + treatment_start)
-
+                       'treatment_start': self.sim_params['start_point'] + self.sim_params['treatment_start']}
+        
     def get_params(self):
         path = os.path.join(self.find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
         with open(path, 'r') as file:
@@ -32,12 +32,12 @@ class FitMutationRate:
         return None
 
     def get_mutation_number_experiment(self):
-        path = '../fit_data/mutation_rate'
-        wells = [x.split('_')[2] for x in os.listdir(path) if x.startswith('colony')]
+        path = 'data/exp_data/Continuous_therapy'
+        wells = [x.split('_')[2] for x in os.listdir(path) if x.startswith('colony') and x.endswith('clonearea.csv')]
         num_clones = []
         for well in wells:
-            if well == 'P1':
-                well = 'P1_'
+            # if well == 'P1':
+            #     well = 'P1_'
             clones_1 = pd.read_csv(f'{path}/clone_data_fusion_resolved_{well}.csv')
             colony_1 = pd.read_csv(f'{path}/colony_data_{well}_with_clonearea_with_extrapolation_to_final.csv')
 
@@ -90,7 +90,7 @@ class FitMutationRate:
     def fit_mutation_rate(self, initial_guess):
         initial_rate = np.array(initial_guess)
 
-        log_dir = '../logs_fitting'
+        log_dir = 'source/fit/logs_fitting'
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         log_list = [i for i in os.listdir(log_dir) if i.startswith('fit_mutation_rate_run_')]
@@ -109,8 +109,8 @@ class FitMutationRate:
 
         print(result)
         print("Optimized parameters:", optimized_params)
-        fit_list = [i for i in os.listdir('../fit_results') if i.startswith('fit_mutation_rate')]
-        torch.save(result, f'../fit_results/fit_mutation_rate_{len(fit_list)}_test.pth')
+        fit_list = [i for i in os.listdir('source/fit/fit_results') if i.startswith('fit_mutation_rate')]
+        torch.save(result, f'source/fit/fit_results/fit_mutation_rate_{len(fit_list)}_test.pth')
 
 def setup_logger(log_file):
     logger = logging.getLogger(f'fitting_logger')
@@ -125,3 +125,4 @@ if __name__ == '__main__':
     initial_guess = 0.75  # Initial guess for mutation rate
     fit_mutation = FitMutationRate()
     fit_mutation.fit_mutation_rate(initial_guess)
+    

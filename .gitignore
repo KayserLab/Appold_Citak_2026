@@ -2,7 +2,19 @@
 /data/
 /appold_citak_2026.egg-info/
 /videos/
+/.git/
 
 __pycache__/
-hardcoded_params_instances.tsv
 /demo/demo_data/met_6_5_18/
+*.pdf
+
+/slurm_logs/
+/.venv311/
+/.venv311_gpu/
+
+/Uncertainty_ridge/results/
+/Validation/results/
+run_sweep.sh
+/SI_Figures/plots/
+/source/fit/fit_results/
+/source/fit/logs_fitting/

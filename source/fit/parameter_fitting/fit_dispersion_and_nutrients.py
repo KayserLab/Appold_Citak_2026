@@ -11,13 +11,13 @@ from pathlib import Path
 
 
 def get_exp_data(path):
-    pulse_csv = pd.read_csv(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), f'source/fit/fit_data/no_treatment_csv/{path}'))
-    area = pulse_csv['colony_area'][:150]
+    data_csv = pd.read_csv(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), f'data/exp_data/No_treatment_control/{path}'))
+    area = data_csv['colony_area'][:150]
     return area
 
 def get_nutrient_data(start_point):
-    position_of_mutant_in_sim_pixel = [3, 7, 11, 15]
-    frame_of_growth = [62.7138815475517,  122.85735392335089, 183.00082629915008, 243.1442986749493]  # Calculate from experimental data (use calculate_res_regrowth_vals.py)(parameter_checking fit to regrowth curve)
+    position_of_mutant_in_sim_pixel = [2, 4, 6, 8]  # [3, 7, 11, 15]
+    frame_of_growth = [47.6780134536019, 77.7497496415015, 107.8214858294011, 137.8932220173007]  # [62.7138815475517,  122.85735392335089, 183.00082629915008, 243.1442986749493]  # Calculate from experimental data (use calculate_res_regrowth_vals.py)(parameter_checking fit to regrowth curve)
     sim_step_of_growth = (np.array(frame_of_growth)) * 10 + start_point
     return position_of_mutant_in_sim_pixel, sim_step_of_growth
 
@@ -28,7 +28,6 @@ def run_simulation(initial_guess):
     sim.params['diffusion_resistant'] = initial_guess[0]
     sim.params['uptake_rate'] = initial_guess[1]
     sim.params['diffusion_nutrients'] = initial_guess[2]
-    sim.params['image_size'] = 200
     sim.params['mutations_active'] = False
     sim.set_random_seed()
 
@@ -67,22 +66,23 @@ def find_project_root(current_dir, marker_file):
         current_dir = os.path.dirname(current_dir)
     return None
 
-def run_sim_for_nut_diff(initial_guess, logger):
+def run_sim_for_nut_diff(initial_guess, start_point, logger):
     sim1 = cr.DiffusionModel2D()
-    start_point = sim1.params['start_point']
+    path_yaml = os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
+    with open(path_yaml, 'r') as file:
+        params_yaml = yaml.safe_load(file)
     sim1.params['diffusion_sensitive'] = initial_guess[0]
     sim1.params['diffusion_resistant'] = initial_guess[0]
     sim1.params['uptake_rate'] = initial_guess[1]
     sim1.params['diffusion_nutrients'] = initial_guess[2]
     sim1.params['mutations_active'] = False
-    sim1.params['image_size'] = 200
     sim1.params['save_in_core'] = True
-    first_start = 360 + start_point
-    time = 390 + start_point
+    first_start = params_yaml['treatment_start'] + start_point
+    time = params_yaml['treatment_start'] + 30 + start_point
     sim1.treatment_times = np.zeros(time)
     sim1.treatment_times[first_start:] = True
     sim1.params['total_time'] = time
-    sim1.params['save_results'] = os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'source/fit/fit_data/sim_data/nutrient_diffusion')
+    sim1.params['save_results'] = os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'data/sim_data/nutrient_diffusion_fitting')
     sim1.run_simulation(save_without_asking=True)
 
     sim = cr.DiffusionModel2D()
@@ -90,17 +90,16 @@ def run_sim_for_nut_diff(initial_guess, logger):
     sim.params['diffusion_resistant'] = initial_guess[0]
     sim.params['uptake_rate'] = initial_guess[1]
     sim.params['diffusion_nutrients'] = initial_guess[2]
-    sim.params['total_time'] = 2000 + start_point
-    sim.params['treatment_efficacy'] = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'source/fit/fit_data/sim_data/nutrient_diffusion/treatment_efficacy.npy'))[360 + start_point]
-    sim.params['image_size'] = 200
+    sim.params['total_time'] = 2400 + start_point
+    sim.treatment_efficacy = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'data/sim_data/nutrient_diffusion_fitting/treatment_efficacy.npy'))[params_yaml['treatment_start'] + start_point]
+    sim.prev_treatment = True
     sim.params['mutations_active'] = False
     sim.treatment_times = np.ones(3500, dtype=bool)
-    sim.set_random_seed()
-    sensitive = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'source/fit/fit_data/sim_data/nutrient_diffusion/sensitive.npy'))
-    nutrients = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'source/fit/fit_data/sim_data/nutrient_diffusion/nutrients.npy'))
+    sensitive = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'data/sim_data/nutrient_diffusion_fitting/sensitive.npy'))
+    nutrients = np.load(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'data/sim_data/nutrient_diffusion_fitting/nutrients.npy'))
 
-    sen_start = sensitive[360 + start_point]
-    nut_start = nutrients[360 + start_point]
+    sen_start = sensitive[params_yaml['treatment_start'] + start_point]
+    nut_start = nutrients[params_yaml['treatment_start'] + start_point]
     pos, exp_times = get_nutrient_data(start_point)
     index = np.where(sen_start[100, :] >= 1/sim.params['mutation_scaling'])[0]
     if len(index) == 0:
@@ -129,19 +128,19 @@ def run_sim_for_nut_diff(initial_guess, logger):
         # Check if the resistant cells are over the threshold in the positions to check
         if np.sum(res_start[pos_to_check_1[0], pos_to_check_1[1]]) > 1/sim.params['mutation_scaling'] and not check_1:
             check_1 = True
-            sim_times.append(i + 360 + start_point)
+            sim_times.append(i + params_yaml['treatment_start'] + start_point)
 
         if np.sum(res_start[pos_to_check_2[0], pos_to_check_2[1]]) > 1/sim.params['mutation_scaling'] and not check_2:
             check_2 = True
-            sim_times.append(i + 360 + start_point)
+            sim_times.append(i + params_yaml['treatment_start'] + start_point)
 
         if np.sum(res_start[pos_to_check_3[0], pos_to_check_3[1]]) > 1/sim.params['mutation_scaling'] and not check_3:
             check_3 = True
-            sim_times.append(i + 360 + start_point)
+            sim_times.append(i + params_yaml['treatment_start'] + start_point)
 
         if np.sum(res_start[pos_to_check_4[0], pos_to_check_4[1]]) > 1/sim.params['mutation_scaling'] and not check_4:
             check_4 = True
-            sim_times.append(i + 360 + start_point)
+            sim_times.append(i + params_yaml['treatment_start'] + start_point)
 
     if len(sim_times) < len(exp_times):
         for _ in range(len(exp_times) - len(sim_times)):
@@ -168,21 +167,24 @@ def get_start_point(area_exp, area_sim):
 
 def minimization_function(initial_guess, logger):
     area_sim_list = []
-    area_exp_list = []
-    experiment_replicas = [path for path in os.listdir(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'source/fit/fit_data/no_treatment_csv/For_Manuscript')) if path.endswith('clonearea.csv')]
-    positions, exp_times, sim_times = run_sim_for_nut_diff(initial_guess, logger)
-    for i, path in enumerate(experiment_replicas):
-        area_exp = get_exp_data(path)
-        area_exp_list.append(area_exp)
-        nutrient_array, sensitive_array, resistant_array, mutation_scaling = run_simulation(initial_guess)
-        area_sim = extract_area(np.array(sensitive_array), np.array(resistant_array), mutation_scaling)
-        if i == 0:
-            start_point = get_start_point(area_exp, area_sim)
-            update_params(start_point)
-        logger.info(f"Start point for {path}: {start_point}")
-        area_sim_list.append(area_sim[start_point:(len(area_exp)*10 + start_point)])
+    
+    experiment_replicas = sorted([path for path in os.listdir(os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'data/exp_data/No_treatment_control')) if path.endswith('clonearea.csv')])
+    area_exp_list = [get_exp_data(path) for path in experiment_replicas]
+    nutrient_array, sensitive_array, resistant_array, mutation_scaling = run_simulation(initial_guess)
+    area_sim = extract_area(np.array(sensitive_array), np.array(resistant_array), mutation_scaling)
+    start_point = get_start_point(area_exp_list[0], area_sim)
+    logger.info(f"Start point: {start_point}")
+
+    positions, exp_times, sim_times = run_sim_for_nut_diff(initial_guess, start_point, logger)
+
+    area_sim_list = [area_sim[start_point:(len(area_exp) * 10 + start_point)] for area_exp in area_exp_list]
     value_to_min = error_function(np.array(area_exp_list), np.array(area_sim_list), np.array(exp_times), np.array(sim_times), logger)
+
     print(f"Results: {value_to_min}")
+    return value_to_min, start_point
+
+def minimization_wrapper(initial_guess, logger):
+    value_to_min, _ = minimization_function(initial_guess, logger)
     return value_to_min
 
 def error_function(area_exp, area_sim, exp_times, sim_times, logger):
@@ -199,7 +201,7 @@ def error_function(area_exp, area_sim, exp_times, sim_times, logger):
     for i in range(len(area_exp)):
         area_mse_part = np.mean((area_sim[i, ::10] - area_exp[i]) ** 2)
         area_rmse_part = np.sqrt(area_mse_part)
-        area_nrmse_part = area_rmse_part / np.mean(area_exp[i, ::10])
+        area_nrmse_part = area_rmse_part / np.mean(area_exp[i])
         area_nrmse_list.append(area_nrmse_part)
     radius_nrmse = np.mean(area_nrmse_list)
 
@@ -213,7 +215,7 @@ def error_function(area_exp, area_sim, exp_times, sim_times, logger):
 def fit_simulation(initial_guess):
     initial_guess = initial_guess
 
-    log_dir = '../logs_fitting'
+    log_dir = 'source/fit/logs_fitting'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     log_list = [i for i in os.listdir(log_dir) if i.startswith('fit_dispersion_and_nutrients_run_')]
@@ -225,16 +227,17 @@ def fit_simulation(initial_guess):
         logger.info(f"Current parameters: {xk}")
         print(xk)
 
-    result = opt.minimize(minimization_function, np.array(initial_guess), args=(logger,), method='Nelder-Mead', callback=callback_func,
+    result = opt.minimize(minimization_wrapper, np.array(initial_guess), args=(logger,), method='Nelder-Mead', callback=callback_func,
                           options={'disp': True, 'maxiter': 2100})
     optimized_params = result.x
-
+    final_value, final_start_point = minimization_function(optimized_params, logger)
+    result['final_start_point'] = final_start_point
     print(result)
     print("Optimized parameters:", optimized_params)
-    fit_list = [i for i in os.listdir('../fit_results') if i.startswith('fit_dispersion_and_nutrients')]
+    fit_list = [i for i in os.listdir('source/fit/fit_results') if i.startswith('fit_dispersion_and_nutrients')]
 
-    torch.save(result, f'../fit_results/fit_dispersion_and_nutrients_{len(fit_list)}.pth')
-    logger.info(f"Optimized parameters saved to ../fit_results/fit_dispersion_and_nutrients_{len(fit_list)}.pth")
+    torch.save(result, f'source/fit/fit_results/fit_dispersion_and_nutrients_{len(fit_list)}.pth')
+    logger.info(f"Optimized parameters saved to source/fit/fit_results/fit_dispersion_and_nutrients_{len(fit_list)}.pth")
 
 def setup_logger(log_file):
     logger = logging.getLogger(f'fitting_logger')
@@ -247,7 +250,7 @@ def setup_logger(log_file):
 
 def main():
     # dispersion_sensitive/resistant, uptake_rate, diffusion_nutrients
-    initial_guess = [0.38293199, 1.90624767, 0.09785365]
+    initial_guess = [0.42299164, 2.55451765, 0.04073048] # [0.4, 1.9, 0.1]  # [0.38293199, 1.90624767, 0.09785365]
     fit_simulation(initial_guess)
 
 if __name__ == '__main__':

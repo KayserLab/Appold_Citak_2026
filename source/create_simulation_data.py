@@ -21,6 +21,54 @@ def create_data(replicates, treatments):
         elif treatments[j] == 'met_9_18':
             treat_on, treat_off = 180, 360
             pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_4_5_18':
+            treat_on, treat_off = 90, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_5_18':
+            treat_on, treat_off = 100, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_5_5_18':
+            treat_on, treat_off = 110, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_6_18':
+            treat_on, treat_off = 120, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_6_25_18':
+            treat_on, treat_off = 125, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_6_75_18':
+            treat_on, treat_off = 135, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_7_18':
+            treat_on, treat_off = 140, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_7_5_18':
+            treat_on, treat_off = 150, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_8_18':
+            treat_on, treat_off = 160, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_8_5_18':
+            treat_on, treat_off = 170, 360
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_4_15_5':
+            treat_on, treat_off = 80, 310
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_4_20_5':
+            treat_on, treat_off = 80, 410
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_6_5_15_5':
+            treat_on, treat_off = 130, 310
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_6_5_20_5':
+            treat_on, treat_off = 130, 410
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_9_15_5':
+            treat_on, treat_off = 180, 310
+            pulse, pulse_duration = False, None
+        elif treatments[j] == 'met_9_20_5':
+            treat_on, treat_off = 180, 410
+            pulse, pulse_duration = False, None
         else:
             treat_on, treat_off = None, None
             pulse, pulse_duration = None, None
@@ -32,4 +80,6 @@ def create_data(replicates, treatments):
 if __name__ == "__main__":
     replicates = [20, 20, 20, 20, 20, 20]
     treatments = ['met_4_18', 'met_6_5_18', 'met_9_18', 'no_treatment', 'continuous_dose', 'pulse']
+    # treatments = ['met_4_5_18', 'met_5_18', 'met_5_5_18', 'met_6_18', 'met_6_25_18', 'met_6_75_18', 'met_7_18', 'met_7_5_18', 'met_8_18', 'met_8_5_18', 'no_treatment']
+    # treatments = ['met_4_15_5', 'met_4_20_5', 'met_6_5_15_5', 'met_6_5_20_5', 'met_9_15_5', 'met_9_20_5']
     create_data(replicates, treatments)

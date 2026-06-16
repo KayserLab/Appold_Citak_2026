@@ -25,7 +25,8 @@ def remove_edge(img, index_list, removal_layers=1):
     return img0
 
 def sigmoid(x):
-    y = 5.85696873e+02 / (1 + np.exp(6.00627550 * (x + 7.93420507e-02))) - 1.38418863
+    # y = 3.87401421e+02 / (1 + np.exp(5.33988821 * (x + 7.21574279e-02))) - 1.25396977  # diagonal
+    y = 7.78241196e+02 / (1 + np.exp(4.94935493 * (x + 1.06728521e-01))) - 3.38920380  # horizontal
     return y
 
 def has_breakout(sensitive, resistant, treat_effic, scaling):
@@ -57,6 +58,7 @@ def get_breakout_statistics(durations, replicates):
             sim = cr.DiffusionModel2D()
             sim.random_seed = i
             sim.params['save_in_core'] = False
+            sim.params['return_all'] = True
             time = sim.params['total_time']
             start_point = 0 if sim.params['gaussian'] else sim.params['start_point']
             first_start = sim.params['treatment_start'] + start_point
@@ -66,13 +68,13 @@ def get_breakout_statistics(durations, replicates):
 
             _, sen, res, _, treat_effic = sim.run_simulation(save_without_asking=False, stop_at_fullstop=False)
 
-            sensitive, resistant = np.where(sen > 1 / sim.params['mutation_scaling'], True, False), np.where(res > 1 / sim.params['mutation_scaling'], True, False)
+            sensitive, resistant = np.where(sen[-1] > 1 / sim.params['mutation_scaling'], True, False), np.where(res[-1] > 1 / sim.params['mutation_scaling'], True, False)
 
             breakout = has_breakout(sensitive, resistant, treat_effic[-1], sim.params['mutation_scaling'])
             if breakout:
                 breakouts.append(1)
         summed_breakouts.append(np.sum(breakouts))
-    np.save('breakout_statistics.npy', np.array(summed_breakouts))
+    np.save('data/sim_data/breakout_statistics_horizontal.npy', np.array(summed_breakouts))
 
 def calc_errorbars(k_arr, n_arr, confidence_level, method="wilson"):
     lower_bounds = []
@@ -113,7 +115,7 @@ def plot_breakout_probability(durations, replicates):
     replicates_exp =            np.array([ 10, 12,  10,   15,   11,   14,   13,   12,   11,  10])
     treatment_duration_exp =    np.array([ 40, 80, 120,  160,  200,  240,  280,  320,  360, 400])
 
-    breakouts_sim = np.load('breakout_statistics.npy') # np.array([np.int64(21), np.int64(29), np.int64(25), np.int64(27), np.int64(17), np.int64(25), np.int64(32), np.int64(49), np.int64(48), np.int64(50)])
+    breakouts_sim = np.load('data/sim_data/breakout_statistics_horizontal.npy') # np.array([np.int64(21), np.int64(29), np.int64(25), np.int64(27), np.int64(17), np.int64(25), np.int64(32), np.int64(49), np.int64(48), np.int64(50)])
     replicates_sim = np.array([75, 75, 75, 75, 75, 75, 75, 75, 75, 75]) # np.array([replicates for _ in durations])
     treatment_duration_sim = np.array(durations)
 
@@ -130,7 +132,7 @@ def plot_breakout_probability(durations, replicates):
     plt.xticks(np.arange(0, 22, 2))
     # plt.grid(True, linestyle='--', alpha=0.7)
     plt.legend(frameon=False, loc='lower right')
-    plt.savefig('breakouts_per_pulse.pdf', bbox_inches='tight', transparent=True)
+    plt.savefig('SI_Figures/plots/breakouts_per_pulse_horizontal.pdf', bbox_inches='tight', transparent=True)
     plt.show()
 
 def main(durations):

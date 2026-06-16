@@ -145,11 +145,11 @@ def plot_treat_bars(fig, ax):
     # y_cont = 0.43
     # y_nt = 0.76
 
-    # draw bars (now same thickness, no clipping)
+    # # draw bars (now same thickness, no clipping)
     # bar_ax.broken_barh(continuous_periods, (y_cont - BAR_H / 2, BAR_H), facecolors=mpl.colormaps.get_cmap('tab20b').colors[16], edgecolor='none')
     # bar_ax.broken_barh(nt_periods, (y_nt - BAR_H / 2, BAR_H), facecolors=mpl.colormaps.get_cmap('tab20b').colors[0], edgecolor='none')
 
-    # optional labels on the left
+    # # optional labels on the left
     # add_bar_label(bar_ax, y_nt, "NT", mpl.colormaps.get_cmap('tab20b').colors[0])
     # add_bar_label(bar_ax, y_cont, "CT", mpl.colormaps.get_cmap('tab20b').colors[16])
 
@@ -192,7 +192,7 @@ def get_sim_data(replicate, treatment):
     sim_colony_area_temp = []
     sim_clone_area_temp = []
     for i in range(replicate):
-        sim_colony, sim_clone = load_sim_data(f'../../data/sim_data/{treatment}/{treatment}_{i}')
+        sim_colony, sim_clone = load_sim_data(f'data/sim_data/{treatment}/{treatment}_{i}')
         sim_colony_area_temp.append(sim_colony)
         sim_clone_area_temp.append(sim_clone)
 
@@ -218,10 +218,20 @@ def plot_comparison(replicates, treatments):
 
     for j in range(len(treatments)):
         print(treatments[j])
-        params = torch.load(f'../../data/sim_data/{treatments[j]}/{treatments[j]}_0/params.pth')
-        path = f'../../data/exp_data/{treatments[j]}_csv'
-        if treatments[j] == 'pulse':
-            path = f'../../data/exp_data/{treatments[j]}_csv/For_Manuscript'
+        if treatments[j] == 'continuous_dose':
+            treatment_exp = 'Continuous_therapy'
+        elif treatments[j] == 'no_treatment':
+            treatment_exp = 'No_treatment_control'
+        elif treatments[j] == 'pulse':
+            treatment_exp = '14h_Pulse'
+        elif treatments[j] == 'met_4_18':
+            treatment_exp = '4h_18h'
+        elif treatments[j] == 'met_6_5_18':
+            treatment_exp = '6.5h_18h'
+        elif treatments[j] == 'met_9_18':
+            treatment_exp = '9h_18h'
+        params = torch.load(f'data/sim_data/{treatments[j]}/{treatments[j]}_0/params.pth')
+        path = f'data/exp_data/{treatment_exp}'
         exp_data = get_data(path)
         exp_colony_area, exp_colony_iqr, exp_clone_area, exp_clone_iqr = average_over_area(exp_data, length=lengths[j] + 1)
         sim_colony_area, sim_colony_area_iqr, sim_clone_area, sim_clone_area_iqr = get_sim_data(replicates[j], treatments[j])
@@ -229,7 +239,7 @@ def plot_comparison(replicates, treatments):
         start_point = params['start_point']
 
         x_sim = np.linspace(0, 3239, 3240)/20
-        x_exp = np.linspace(0, lengths[j], lengths[j])/2
+        x_exp = np.linspace(0, lengths[j], lengths[j])/2 
 
         plot_exp(ax1, x_exp, exp_colony_area, exp_colony_iqr, colors[j], clone=False)
         plot_sim(ax1, x_sim, sim_colony_area, sim_colony_area_iqr, colors[j], start_point, clone=False)
@@ -251,8 +261,8 @@ def plot_comparison(replicates, treatments):
     plot_treat_bars(fig1, ax1)
     plot_treat_bars(fig2, ax2)
 
-    fig1.savefig('compare_colony_area.pdf', bbox_inches='tight', transparent=True)
-    fig2.savefig('compare_clone_area.pdf', bbox_inches='tight', transparent=True)
+    fig1.savefig('SI_Figures/plots/compare_colony_area.pdf', bbox_inches='tight', transparent=True)
+    fig2.savefig('SI_Figures/plots/compare_clone_area.pdf', bbox_inches='tight', transparent=True)
     fig1.show()
     fig2.show()
 

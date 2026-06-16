@@ -20,7 +20,7 @@ def create_simulation_data():
     rc.main(0, 0, save_dir=f'Figure_3/panel_h/pulse', pulse=True, pulse_duration=280)
 
 def load_data():
-    path = '../../data/sim_data/pulse/pulse_3'
+    path = 'data/sim_data/pulse/pulse_2'
     sensitive = np.load(f'{path}/sensitive.npy')
     resistant = np.load(f'{path}/resistant.npy')
     nutrients = np.load(f'{path}/nutrients.npy')
@@ -75,10 +75,10 @@ def plot_frame(save_name, frame):
     alpha = np.where(resistant[frame] > 1/params['mutation_scaling'], 1, alpha)
     rgba = np.dstack([rgb_add, alpha])
     ax.imshow(rgba, interpolation='none')
-    if frame == 2251:
+    if frame == 2204:
         ax.hlines(100, 0, 100, color='black', linewidth=0.6)
     ax.axis('off')
-    plt.savefig(f'plots_pulse/{save_name}_{frame}_cells.pdf', dpi=300, transparent=True, bbox_inches='tight')
+    plt.savefig(f'Figure_3/panel_h/plots_pulse/{save_name}_{frame}_cells.pdf', dpi=300, transparent=True, bbox_inches='tight')
     plt.close()
 
     colors = [(0, (1, 1, 1)),  # white
@@ -87,11 +87,11 @@ def plot_frame(save_name, frame):
 
     fig, ax = plt.subplots(figsize=(6,6), dpi=300)
     ax.imshow(nutrients[frame], interpolation='none', cmap=cmap)
-    if frame == 651:
+    if frame == 604:
         scale_bar_length = 1000/(13.76 * 8.648)  # mm = 1000µm / (sim_to_exp_px * exp_px_to_µm)
         ax.hlines(190, 10, 10 + scale_bar_length*2, color='black', linewidth=3)
     ax.axis('off')
-    plt.savefig(fr'plot_pulse/{save_name}_{frame}_nutrients.pdf', dpi=300, transparent=True, bbox_inches='tight')
+    plt.savefig(fr'Figure_3/panel_h/plots_pulse/{save_name}_{frame}_nutrients.pdf', dpi=300, transparent=True, bbox_inches='tight')
     plt.close()
 
     # Colorbars
@@ -108,9 +108,9 @@ def plot_frame(save_name, frame):
     sm_sen = ScalarMappable(norm=norm_sen, cmap=cmap_sen)
     sm_nut = ScalarMappable(norm=norm_nut, cmap=cmap_nut)
 
-    for sm, label, fname in [(sm_res, fr'Resistant Density ($\gamma$ = {gamma_res})', fr'plot_cbars/{save_name}_cbar_resistant.pdf'),
-                             (sm_sen, fr'Sensitive Density ($\gamma$ = {gamma_sen})', fr'plot_cbars/{save_name}_cbar_sensitive.pdf'),
-                             (sm_nut, 'Nutrient Concentration', fr'plot_cbars/{save_name}_cbar_nutrients.pdf')]:
+    for sm, label, fname in [(sm_res, fr'Resistant Density ($\gamma$ = {gamma_res})', fr'Figure_3/panel_h/plot_cbars/{save_name}_cbar_resistant.pdf'),
+                             (sm_sen, fr'Sensitive Density ($\gamma$ = {gamma_sen})', fr'Figure_3/panel_h/plot_cbars/{save_name}_cbar_sensitive.pdf'),
+                             (sm_nut, 'Nutrient Concentration', fr'Figure_3/panel_h/plot_cbars/{save_name}_cbar_nutrients.pdf')]:
 
         fig = plt.figure(figsize=(2, 0.15), dpi=300)
         cax = fig.add_axes([0.05, 0.25, 0.9, 0.5])
@@ -128,7 +128,8 @@ def plot_frame(save_name, frame):
 def main():
     # pulse
     # create_simulation_data()  # only use if you want to test something (you will need to adjust the paths in plot_frame as well)
-    for i in [351 + 300, 351 + 700, 351 + 1100, 351 + 1500, 351 + 1900]:
+    params = torch.load(f'data/sim_data/pulse/pulse_2/params.pth')
+    for i in [params['start_point'] + 300, params['start_point'] + 700, params['start_point'] + 1100, params['start_point'] + 1500, params['start_point'] + 1900]:
         plot_frame('pulse', frame=i)
 
 

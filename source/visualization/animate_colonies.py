@@ -4,7 +4,6 @@ import matplotlib.animation as animation
 import torch
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import to_rgba
-
 from matplotlib.collections import LineCollection
 from skimage import measure
 
@@ -19,11 +18,11 @@ def load_data(path):
     sensitive = np.where((sensitive - 1 / params['mutation_scaling']) > 0, sensitive, 0) / np.max(sensitive)
     resistant = np.where((resistant - 1 / params['mutation_scaling']) > 0, resistant, 0) / np.max(resistant)
     nutrients = nutrients / np.max(nutrients)
-    return nutrients[351::2], sensitive[351::2], resistant[351::2], treatment_schedule[351::2], treatment_efficacy[351::2]
+    return nutrients[params['start_point']::2], sensitive[params['start_point']::2], resistant[params['start_point']::2], treatment_schedule[params['start_point']::2], treatment_efficacy[params['start_point']::2], params
 
 
-def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nutes=False):
-    nutrients, sensitive, resistant, treatment_schedule, treatment_efficacy = load_data(path)
+def animate_simulation(path, save_name, fps, save_path, nut_threshold_1, nut_threshold_2, plot_nutes=False):
+    nutrients, sensitive, resistant, treatment_schedule, treatment_efficacy, params = load_data(path)
 
     def normalize_array(x, gamma, vmin=None, vmax=None):
         if vmin is None or vmax in None:
@@ -80,8 +79,8 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         alpha_sen, alpha_res = sen_norm[..., None], res_norm[..., None]
         rgb_add = res_rgb * alpha_res + sen_rgb * alpha_sen * (1 - alpha_res)
 
-        alpha = np.where(sensitive[frame] > 1 / 2184.07516852, 1, 0)
-        alpha = np.where(resistant[frame] > 1 / 2184.07516852, 1, alpha)
+        alpha = np.where(sensitive[frame] > 1 / params['mutation_scaling'], 1, 0)
+        alpha = np.where(resistant[frame] > 1 / params['mutation_scaling'], 1, alpha)
         temp_img = np.dstack([rgb_add, alpha])
 
         temp_img[:, :2, :] = 1
@@ -96,7 +95,8 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
 
         img.set_array(temp_img)
 
-        lc.set_segments(contours_to_segments(nut, nut_threshold))
+        lc1.set_segments(contours_to_segments(nut, nut_threshold_1))
+        lc2.set_segments(contours_to_segments(nut, nut_threshold_2))
 
         return img,
 
@@ -122,8 +122,8 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         alpha_sen, alpha_res = sen_norm[..., None], res_norm[..., None]
         rgb_add = res_rgb * alpha_res + sen_rgb * alpha_sen * (1 - alpha_res)
 
-        alpha = np.where(sensitive[frame] > 1 / 2184.07516852, 1, 0)
-        alpha = np.where(resistant[frame] > 1 / 2184.07516852, 1, alpha)
+        alpha = np.where(sensitive[frame] > 1 / params['mutation_scaling'], 1, 0)
+        alpha = np.where(resistant[frame] > 1 / params['mutation_scaling'], 1, alpha)
         temp_img = np.dstack([rgb_add, alpha])
 
         img.set_array(temp_img)
@@ -158,8 +158,8 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         alpha_sen, alpha_res = sen_norm[..., None], res_norm[..., None]
         rgb_add = res_rgb * alpha_res + sen_rgb * alpha_sen * (1 - alpha_res)
 
-        alpha = np.where(sensitive[0] > 1 / 2184.07516852, 1, 0)
-        alpha = np.where(resistant[0] > 1 / 2184.07516852, 1, alpha)
+        alpha = np.where(sensitive[0] > 1 / params['mutation_scaling'], 1, 0)
+        alpha = np.where(resistant[0] > 1 / params['mutation_scaling'], 1, alpha)
         rgb = np.dstack([rgb_add, alpha])
         img = ax[0].imshow(rgb, interpolation='none')
         colors = [(0, (1, 1, 1)),  # white
@@ -209,8 +209,8 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         alpha_sen, alpha_res = sen_norm[..., None], res_norm[..., None]
         rgb_add = res_rgb * alpha_res + sen_rgb * alpha_sen * (1 - alpha_res)
 
-        alpha = np.where(sensitive[0] > 1 / 2184.07516852, 1, 0)
-        alpha = np.where(resistant[0] > 1 / 2184.07516852, 1, alpha)
+        alpha = np.where(sensitive[0] > 1 / params['mutation_scaling'], 1, 0)
+        alpha = np.where(resistant[0] > 1 / params['mutation_scaling'], 1, alpha)
         rgb = np.dstack([rgb_add, alpha])
         img = ax.imshow(rgb, interpolation='none')
         ax.axis('off')
@@ -221,14 +221,17 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
         ax.hlines(y=img.get_array().shape[0] - 10, xmin=10, xmax=10 + one_mm_to_px, colors='black', linewidth=4)
         ax.text(2 + one_mm_to_px, img.get_array().shape[0] - 12, f'2 mm', color='black', fontsize=7, ha='center')
 
-        lc = LineCollection([], colors='red', linewidths=1.75, linestyles='solid')
-        ax.add_collection(lc)
+        lc1 = LineCollection([], colors='red', linewidths=1.75, linestyles='solid')
+        lc2 = LineCollection([], colors='red', linewidths=1.75, linestyles='solid')
+        ax.add_collection(lc1)
+        ax.add_collection(lc2)
 
         def contours_to_segments(z, level):
             contours = measure.find_contours(z, level=level)
             return [np.column_stack((c[:, 1], c[:, 0])) for c in contours]
 
-        lc.set_segments(contours_to_segments(nut, nut_threshold))
+        lc1.set_segments(contours_to_segments(nut, nut_threshold_1))
+        lc2.set_segments(contours_to_segments(res, nut_threshold_2))
 
         ani = animation.FuncAnimation(fig, update, frames=len(sensitive), interval=100, blit=True)
 
@@ -238,10 +241,11 @@ def animate_simulation(path, save_name, fps, save_path, nut_threshold, plot_nute
 
 
 def main():
-    nut_threshold = 1/(np.exp(2)+1)
-    path = 'data/demo/met_6_5_18/met_6_5_18_0'
+    nut_threshold_1 = 1/(np.exp(2)+1)
+    nut_threshold_2 = 1/(np.exp(-2)+1)
+    path = 'data/sim_data/met_6_5_18/met_6_5_18_0'
     save_path = 'videos'
-    animate_simulation(path, 'met_6_5_18_video', 90, save_path, nut_threshold, plot_nutes=True)
+    animate_simulation(path, 'met_6_5_18', 90, save_path, nut_threshold_1, nut_threshold_2, plot_nutes=False)
     # path = 'results/pulse_set_mut_pos'
     # save_path = 'results'
     # animate_simulation(path, 'pulse_set_mut_pos_video_new', 90, save_path, nut_threshold, plot_nutes=False)

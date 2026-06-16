@@ -1,10 +1,15 @@
 import numpy as np
+import yaml
 from source import core as cr
 import scipy.optimize as opt
 import torch
 import logging
 import os
+import pandas as pd
 
+
+def scalarize_parameter(value):
+    return float(np.atleast_1d(value)[0])
 
 def check_edge(img, x, y,):
     for i in range(x - 1, x + 2):
@@ -43,38 +48,43 @@ def has_breakout(sensitive, resistant):
             return False
 
 def get_start_point(initial_guess):
+    initial_guess = scalarize_parameter(initial_guess)
     sim = cr.DiffusionModel2D()
-    sim.params['mutation_scaling'] = initial_guess
-    sim.params['mutations_active'] = True
-    sim.params['image_size'] = 200
-    sim.params['return_all'] = True
-    sim.params['save_in_core'] = False
-    sim.random_seed = 0
-    sim.params['total_time'] = 450
-    sim.treatment_times = np.zeros(sim.params['total_time'])
-    _, sensitive, resistant, _, _ = sim.run_simulation()
+    # sim.params['mutation_scaling'] = initial_guess
+    # sim.params['mutations_active'] = True
+    # sim.params['return_all'] = True
+    # sim.params['save_in_core'] = False
+    # sim.random_seed = 0
+    # sim.params['total_time'] = 450
+    # sim.treatment_times = np.zeros(sim.params['total_time'])
+    # _, sensitive, resistant, _, _ = sim.run_simulation()
 
-    counts = []
-    for i in range(len(sensitive)):
-        sen_thresholded = np.where(sensitive[i] > (1 / initial_guess), 1, 0)
-        res_thresholded = np.where(sensitive[i] > (1 / initial_guess), 1, 0)
+    # counts = []
+    # for i in range(len(sensitive)):
+    #     sen_thresholded = np.where(sensitive[i] > (1 / initial_guess), 1, 0)
+    #     res_thresholded = np.where(resistant[i] > (1 / initial_guess), 1, 0)
 
-        total_array = sen_thresholded + res_thresholded
-        total_count = np.count_nonzero(total_array)
-        counts.append(total_count)
-    area_sim = np.array(counts) * (1376 / 100) ** 2
-    area_exp = 8020.307692307692
+    #     total_array = sen_thresholded + res_thresholded
+    #     total_count = np.count_nonzero(total_array)
+    #     counts.append(total_count)
+    # area_sim = np.array(counts) * (1376 / 100) ** 2
+    # area_exp = 8020.307692307692
 
-    for i in range(len(area_sim)):
-        if area_sim[i] >= area_exp:
-            return i
-    return None
+    # for i in range(len(area_sim)):
+    #     if area_sim[i] >= area_exp:
+    #         return i
+    return sim.params['start_point']
 
 
 def run_sim(initial_guess, replicates, treatment_duration, experiment_duration, logger):
-    start_point = 351
+    # start_point = 351
+    initial_guess = scalarize_parameter(initial_guess)
+    start_point = get_start_point(initial_guess)
     logger.info(f"Determined start point: {start_point}")
     breakout_probabilitys = []
+    path = os.path.join(cr.find_project_root(os.getcwd(), 'requirements.txt'), 'params.yaml')
+    with open(path, 'r') as file:
+        params_yaml = yaml.safe_load(file)
 
     for j in range(len(replicates)):
         sim_replicates = replicates[j] * 2
@@ -84,18 +94,17 @@ def run_sim(initial_guess, replicates, treatment_duration, experiment_duration, 
             sim = cr.DiffusionModel2D()
             sim.params['mutation_scaling'] = initial_guess
             sim.params['mutations_active'] = True
-            sim.params['image_size'] = 200
-            sim.params['return_all'] = False
+            sim.params['return_all'] = True
             sim.params['save_in_core'] = False
             sim.params['total_time'] = experiment_duration[j] + start_point
             sim.random_seed = i
             sim.set_random_seed()
             sim.treatment_times = np.zeros(sim.params['total_time'])
-            treat_start = 360 + start_point
+            treat_start = params_yaml['treatment_start'] + start_point
             sim.treatment_times[treat_start:treat_start+treatment_duration[j]] = True
             _, sensitive, resistant, _, _ = sim.run_simulation()
 
-            sensitive, resistant = np.where(sensitive > 1/initial_guess, True, False), np.where(resistant > 1/initial_guess, True, False)
+            sensitive, resistant = np.where(sensitive[-1] > 1/initial_guess, True, False), np.where(resistant[-1] > 1/initial_guess, True, False)
 
             breakout = has_breakout(sensitive, resistant)
             if breakout:
@@ -117,13 +126,21 @@ def error_function(sim_breakout_probability, exp_breakout_probability):
     return err
 
 def fit_simulation(initial_guess):
-    initial_guess = initial_guess
-    breakouts =           np.array([   4,    4,    5,    8,   10,   12,   13,   12,   10,   10]) 
-    replicates =          np.array([  10,   12,   10,   15,   11,   13,   13,   12,   10,   10])
-    treatment_duration =  np.array([  40,   80,  120,  160,  200,  240,  280,  320,  360,  400])
+    initial_guess = scalarize_parameter(initial_guess)
+    data = pd.read_excel('data/exp_data/Number_Treatment_Failures_by_Pulse_Duration.xlsx')
+
+    pulse_columns = [column for column in data.columns if column != 'Unnamed: 0']
+    summary = pd.DataFrame({
+        'pulse_duration': [int(column.replace('H', '')) for column in pulse_columns],
+        'positions_with_at_least_one_breakout': [int((data[column].fillna(0) > 0).sum()) for column in pulse_columns],
+        'positions_without_nan_entry': [int(data[column].notna().sum()) for column in pulse_columns],})
+
+    breakouts = summary['positions_with_at_least_one_breakout'].to_numpy()  # np.array([   4,    4,    5,    8,   10,   12,   13,   12,   10,   10]) 
+    replicates = summary['positions_without_nan_entry'].to_numpy()  # np.array([  10,   12,   10,   15,   11,   13,   13,   12,   10,   10])
+    treatment_duration = summary['pulse_duration'].to_numpy()*20  # np.array([  40,   80,  120,  160,  200,  240,  280,  320,  360,  400])
     experiment_duration = np.array([1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360, 1360])
 
-    log_dir = '../logs_fitting'
+    log_dir = 'source/fit/logs_fitting'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     log_list = [i for i in os.listdir(log_dir) if i.startswith('fit_mutation_scaling_run_')]
@@ -135,14 +152,14 @@ def fit_simulation(initial_guess):
         logger.info(f"Current parameters: {xk}")
         print(xk)
 
-    result = opt.minimize(minimization_function, np.array(initial_guess), args=(breakouts, replicates, treatment_duration, experiment_duration, logger),
+    result = opt.minimize(minimization_function, np.array([initial_guess], dtype=float), args=(breakouts, replicates, treatment_duration, experiment_duration, logger),
                           method='Nelder-Mead', callback=callback_func, options={'disp': True, 'maxiter': 2100})
     optimized_params = result.x
 
     print(result)
     print("Optimized parameters:", optimized_params)
-    fit_list = [i for i in os.listdir('../fit_results') if i.startswith('fit_mutation_scaling')]
-    torch.save(result, f'../fit_results/fit_mutation_scaling_{len(fit_list)}.pth')
+    fit_list = [i for i in os.listdir('source/fit/fit_results') if i.startswith('fit_mutation_scaling')]
+    torch.save(result, f'source/fit/fit_results/fit_mutation_scaling_{len(fit_list)}.pth')
 
 def setup_logger(log_file):
     logger = logging.getLogger(f'fitting_logger')

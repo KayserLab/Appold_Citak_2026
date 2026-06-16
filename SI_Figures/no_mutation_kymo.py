@@ -78,10 +78,10 @@ def calc_treatment_efficacy(treat_on, treat_off, params):
 
 
 def load_sim_data(path):
-    sen = np.load(f'{path}/sensitive.npy')[351:]
-    res = np.load(f'{path}/resistant.npy')[351:]
-    nut = np.load(f'{path}/nutrients.npy')[351:]
     params = torch.load(f'{path}/params.pth')
+    sen = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    res = np.load(f'{path}/resistant.npy')[params['start_point']:]
+    nut = np.load(f'{path}/nutrients.npy')[params['start_point']:]
 
     radii_sen = []
     radii_res = []
@@ -139,9 +139,9 @@ def rolling_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='same')
 
 def generate_kymograph_from_sim_data(path):
-    sensitive = np.load(f'{path}/sensitive.npy')[351:]
-    resistant = np.load(f'{path}/resistant.npy')[351:]
     params = torch.load(f'{path}/params.pth')
+    sensitive = np.load(f'{path}/sensitive.npy')[params['start_point']:]
+    resistant = np.load(f'{path}/resistant.npy')[params['start_point']:]
 
     kymograph = []
     for i in range(len(sensitive)):
@@ -189,7 +189,7 @@ def generate_kymograph_from_sim_data(path):
     return kymograph
 
 def plot_kymograph(treatment):
-    path = f'../data/sim_data/{treatment}_no_mut'
+    path = f'data/sim_data/{treatment}_no_mut'
     rad_sen, nut, nut_front = load_sim_data(path)
     kymograph = generate_kymograph_from_sim_data(path)
 
@@ -237,12 +237,13 @@ def plot_kymograph(treatment):
     plt.imshow(kymograph.transpose(1,0,2), origin='lower', aspect='auto',  extent=[0, len(rad_sen)/20, 0, Ny * px_to_mm])
     plt.ylim(0, 50*px_to_mm)
     plt.xlim(0, 150)
-    plt.plot(d, rolling_average(growth_layer_low * px_to_mm, window_size=90), label='Effective growth layer', color='#e34234', linestyle=':')
-    plt.plot(d, rolling_average(growth_layer_high * px_to_mm, window_size=90), label='Effective growth layer', color='#e34234', linestyle='-.')
+    plt.plot(d, rolling_average(growth_layer_low * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{low}$', color='#e34234', linestyle=':')
+    plt.plot(d, rolling_average(growth_layer_high * px_to_mm, window_size=90), label=r'$\lambda_\mathrm{high}$', color='#e34234', linestyle='-.')
     plt.xlabel('Time (h)')
     plt.ylabel('Radius (mm)')
     plt.tight_layout()
-    plt.savefig(f'{treatment}_no_mut_kymo.pdf', dpi=300, transparent=True)
+    plt.legend(frameon=False)
+    plt.savefig(f'SI_Figures/plots/no_mutation_kymo_{treatment}.pdf', dpi=300, transparent=True)
     plt.show()
 
 if __name__ == "__main__":

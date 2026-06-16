@@ -45,12 +45,12 @@ class DiffusionModel2D:
         treatment_delay = self.params['treatment_delay']
         release_delay = self.params['release_delay']
 
-        lag_steps = self.params.get('lag_steps', 220)
+        lag_steps = self.params['lag_steps']
 
         current_treatment = bool(self.treatment_times[timer])
 
         if self.prev_treatment and not current_treatment:
-            self.extra_steps_remaining = 30
+            self.extra_steps_remaining = self.params['overshoot_steps']
             self.lag_steps_remaining = lag_steps
 
         if current_treatment:

@@ -41,6 +41,6 @@ def main(treat_on, treat_off, save_dir=None, random_seed=None, pulse=False, puls
 
 
 if __name__ == "__main__":
-    treatment_on = 130
+    treatment_on = 0
     treatment_off = 360
     main(treatment_on, treatment_off)

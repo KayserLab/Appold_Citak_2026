@@ -60,7 +60,7 @@ def get_sim_data(replicate, treatment):
     sim_sen_front_growth_rate_temp = []
     sim_res_front_growth_rate_temp = []
     for i in range(replicate):
-        sim_colony, sim_clone, sim_clone_tot, sim_sen_tot, sen_avg_front, res_avg_front = load_sim_data(f'../../data/sim_data/{treatment}/{treatment}_{i}')
+        sim_colony, sim_clone, sim_clone_tot, sim_sen_tot, sen_avg_front, res_avg_front = load_sim_data(f'data/sim_data/{treatment}/{treatment}_{i}')
         sim_sen_front_growth_rate_temp.append(rolling_average(sen_avg_front, window_size=51))
         sim_res_front_growth_rate_temp.append(rolling_average(res_avg_front, window_size=51))
 
@@ -77,7 +77,12 @@ def rolling_median(data, window_size):
     return rolling_medians
 
 def rolling_average(data, window_size):
-    return np.convolve(data, np.ones(window_size)/window_size, mode='same')
+    left = window_size // 2
+    right = window_size - left - 1
+    padded_data = np.pad(data, (left, right), mode="edge")
+    kernel = np.ones(window_size, dtype=float) / window_size
+
+    return np.convolve(padded_data, kernel, mode="valid")
 
 def plot_sim(ax, x_sim, sim_area, sim_iqr, color, start_point, clone, treatment, linestyle='solid', label=None):
     scaling_factor = 8.648 ** 2 / 1e6
@@ -91,28 +96,28 @@ def plot_sim(ax, x_sim, sim_area, sim_iqr, color, start_point, clone, treatment,
         ax.axvspan(18, 32, color='#bfbfbf', alpha=1, lw=0, zorder=0)
 
 def plot_comparison(replicate, treatment, color):
-    fig, ax = plt.subplots(figsize=(8.35/3, 6.5/6), dpi=300) # (8.125/2, 7.1/5)
+    fig, ax = plt.subplots(figsize=(8.125/2, 7.1/5), dpi=300) # (8.125/2, 7.1/5) (8.35/3, 6.5/6)
 
-    params = torch.load(f'../../data/sim_data/{treatment}/{treatment}_0/params.pth')
+    params = torch.load(f'data/sim_data/{treatment}/{treatment}_0/params.pth')
     sim_sen_front_growth_rate, sim_sen_front_growth_rate_iqr, sim_res_front_growth_rate, sim_res_front_growth_rate_iqr = get_sim_data(replicate, treatment)
 
     start_point = params['start_point']
 
     x_sim = np.linspace(0, 3000, 3001)/20
 
-    plot_sim(ax, x_sim, sim_sen_front_growth_rate, sim_sen_front_growth_rate_iqr, color, start_point, clone=True, treatment=treatment, label='Sensitive front', linestyle='--')
-    plot_sim(ax, x_sim, sim_res_front_growth_rate, sim_res_front_growth_rate_iqr, color, start_point, clone=True, treatment=treatment, label='Resistant front', linestyle=':')
+    plot_sim(ax, x_sim, sim_sen_front_growth_rate*20, sim_sen_front_growth_rate_iqr*20, color, start_point, clone=True, treatment=treatment, label='Sensitive front', linestyle='--')
+    plot_sim(ax, x_sim, sim_res_front_growth_rate*20, sim_res_front_growth_rate_iqr*20, color, start_point, clone=True, treatment=treatment, label='Resistant front', linestyle=':')
 
     ax.set_xlim(0, 150)
-    ax.set_ylim(0, 0.0015*params['mutation_scaling'])
+    ax.set_ylim(0, 0.03*params['mutation_scaling'])
 
     ax.set_ylabel(r'gamma_front (1/h)')
-    ax.legend(loc='upper left', frameon=False)
+    ax.legend(loc='upper right', frameon=False)
 
-    ax.set_xticklabels([])
-    # ax.set_xlabel('Time (h)')
+    # ax.set_xticklabels([])
+    ax.set_xlabel('Time (h)')
 
-    fig.savefig(fr'{treatment}_front_growth_rate_SI.pdf', bbox_inches='tight', transparent=True)
+    fig.savefig(fr'Figure_3/panel_g_j/{treatment}_front_growth_rate_SI.pdf', bbox_inches='tight', transparent=True)
     fig.show()
 
 

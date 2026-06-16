@@ -13,13 +13,13 @@ plt.rcParams.update({'font.size': 7,
                      'mathtext.bf': 'Arial:bold',
                      })
 
-nutrients = np.load('../../data/sim_data/no_treatment/no_treatment_0/nutrients.npy')
-resistant = np.load('../../data/sim_data/no_treatment/no_treatment_0/resistant.npy')
-sensitive = np.load('../../data/sim_data/no_treatment/no_treatment_0/sensitive.npy')
-params = torch.load('../../data/sim_data/no_treatment/no_treatment_0/params.pth', weights_only=False)
-pulse_csv = pd.read_csv('../../source/fit_data/no_treatment_csv/For_manuscript/colony_data_P1__with_clonearea.csv')
-radius = pulse_csv['colony_radius'][:160]
-print(pulse_csv['colony_area'][0])
+nutrients = np.load('data/sim_data/no_treatment/no_treatment_0/nutrients.npy')
+resistant = np.load('data/sim_data/no_treatment/no_treatment_0/resistant.npy')
+sensitive = np.load('data/sim_data/no_treatment/no_treatment_0/sensitive.npy')
+params = torch.load('data/sim_data/no_treatment/no_treatment_0/params.pth', weights_only=False)
+nt_csv = pd.read_csv('data/exp_data/No_treatment_control/colony_data_P1__with_clonearea.csv')
+radius = nt_csv['colony_radius'][:160]
+print(nt_csv['colony_area'][0])
 
 # fig, ax = plt.subplots(nrows=1, ncols=2)
 # # nutrients = np.where(nutrients <= 0.005, 0, nutrients)
@@ -89,7 +89,7 @@ plt.xlabel('Time (h)')
 # plt.plot(np.arange(len(pos)), popt[0] * np.arange(len(pos)) + popt[1], label='Fitted Line')
 plt.legend(fontsize=7)
 # plt.tight_layout()
-plt.savefig('fitted_front_velocity.pdf', bbox_inches='tight', transparent=True)
+plt.savefig('SI_Figures/plots/fitted_front_velocity.pdf', bbox_inches='tight', transparent=True)
 plt.show()
 
 # print((pos[-1]-pos[0])/3289)
