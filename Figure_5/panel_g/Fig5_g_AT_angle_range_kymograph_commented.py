@@ -459,17 +459,17 @@ def tiff_data_to_space_time(config: dict) -> None:
 def main():
     config = {
         # Input subfolder inside Input_files/ (leave "" if TIFFs are directly in Input_files/)
-        "input_relpath": "No_treatment_control",
+        "input_relpath": "adaptive_therapy",
 
         # Output PDF filename inside Output_folder/
-        "output_filename": "Fig5_panel_g_NT.pdf",
+        "output_filename": "Fig5_panel_g_AT.pdf",
 
         # Identifiers to process
-        "identifiers": ["P13"],
+        "identifiers": ["P8"],
 
         # Kymograph parameters
         "tc": 100,
-        "angle": 45,
+        "angle": 58,
         "angle_range": 2,
         "angle_step": 0.5,
         "angle_check": True,
@@ -488,7 +488,7 @@ def main():
         "xlim_max": 150,
 
         # Highlight regions (in frames)
-        "highlight_regions": [],
+        "highlight_regions": [[37, 61], [110, 141], [189, 284]],
         "highlight_color": "#bfbfbf",
         "highlight_alpha": 1,
 

@@ -15,3 +15,5 @@ statsmodels
 trackpy
 openpyxl
 cellpose
+itertools
+statsmodels

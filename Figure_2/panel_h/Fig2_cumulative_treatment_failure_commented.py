@@ -61,7 +61,7 @@ CONFIG = {
     # Plot axes and formatting
     "lower_bound": 0,     # x-axis in frames
     "upper_bound": 200,   # x-axis in frames
-    "treatment_window": (37, 300),
+    "treatment_window": (37, 66),
 
     "theme": "bright",    # "bright" or "dark"
     "normalize": False,   # True → percentage, False → counts

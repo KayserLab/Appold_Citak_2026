@@ -706,14 +706,14 @@ def main():
         # Select the conditions used for this figure by commenting or uncommenting entries.
         "folder_paths": [
             #condition_paths["No Treatment"],
-            condition_paths["Continuous"],
-            condition_paths["9/18"],
-            condition_paths["4/18"],
-            #condition_paths["6.5/20.5"],
+            #condition_paths["Continuous"],
+            #condition_paths["9/18"],
+            #condition_paths["4/18"],
+            condition_paths["6.5/20.5"],
             condition_paths["6.5/18"],
-            #condition_paths["6.5/15.5"],
-            #condition_paths["9/20.5"],
-            condition_paths["AT"],
+            condition_paths["6.5/15.5"],
+            condition_paths["9/20.5"],
+            #condition_paths["AT"],
         ],
 
         # Specify the colony identifiers searched for within each active condition folder.

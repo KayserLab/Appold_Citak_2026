@@ -39,7 +39,7 @@ CONFIG = {
     "scale_factor_um_per_px": 8.648,
 
     # Filtering (vectorfield-style filtering)
-    "min_frame_first_seen": 50,
+    "min_frame_first_seen": 25,
     "max_frame_first_seen": 200,
     "min_dist_px_first": 2,
     "max_dist_px_first": 57,  # ca. 500 µm / 8.648 µm/px
@@ -51,7 +51,7 @@ CONFIG = {
 
     # Plot styling for trajectories
     "theme": "bright",  # "bright" or "dark"
-    "treatment_window_frames": (37, 220),
+    "treatment_window_frames": (37, 330),
     "x_lower_bound_frames": 0,
     "x_upper_bound_frames": 200,
     "y_upper_bound_um": 500,
